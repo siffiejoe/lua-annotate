@@ -1,4 +1,7 @@
 lua-annotate
 ============
 
-docstrings and type checking
+A decorator for docstrings and type checking
+
+See [here](http://siffiejoe.github.io/lua-annotate/).
+
