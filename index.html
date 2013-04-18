@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="content-type" content="text/html; charset=utf-8" /><title>annotate -- Annotations and Docstrings for Lua Values</title><link rel="stylesheet" type="text/css" href="default.css" /><link rel="stylesheet" type="text/css" href="highlight.css" /><script type="text/javascript" src="highlight.pack.js"></script><script type="text/javascript">
+      hljs.initHighlightingOnLoad();
+    </script></head><body>
+
+<p><img src="annotate.png" alt="annotate Logo" /></p>
+
+<h1>annotate -- Annotations and Docstrings for Lua Values</h1><div class="toc"><a href="#Introduction" title="Introduction">Introduction</a> · <a href="#Basic_Usage" title="Basic Usage">Basic Usage</a> · <a href="#Reference" title="Reference">Reference</a> · <a href="#Download" title="Download">Download</a> · <a href="#Installation" title="Installation">Installation</a> · <a href="#Contact" title="Contact">Contact</a> · <a href="#License" title="License">License</a></div>
+
+<h2><a name="Introduction" id="Introduction"></a>Introduction</h2>
+
+<p>There are basically two ways for documenting code in a dynamically
+typed programming language like Lua: you can write static
+documentation like external readme files or comments that can be
+extracted by specialized documentation tools, or you can annotate Lua
+values with runtime information. The first approach enables you to
+extract useful information without running any code, a popular tool
+for this is <a href="https://github.com/stevedonovan/LDoc/">LDoc</a>. One well-known representative of the second
+approach is <a href="http://www.python.org/">Python</a> with its <a href="https://en.wikipedia.org/wiki/Docstring">docstrings</a>. One advantage of
+this approach is that you can easily process those runtime annotations
+and e.g. provide interactive help, or type checking.</p>
+
+<p>This module uses the ideas presented <a href="http://lua-users.org/wiki/DecoratorsAndDocstrings">here</a> and <a href="http://lua-users.org/wiki/LuaTypeChecking">here</a> to
+provide a basis for docstring handling in Lua, and flexible argument
+and return value checking for Lua functions.</p>
+
+
+
+<h2><a name="Basic_Usage" id="Basic_Usage"></a>Basic Usage</h2>
+
+<p>To add a docstring annotation to a Lua value (like e.g. a function)
+you use the <code>annotate</code> base module:</p>
+
+<pre><code>$ cat &gt; test1.lua
+-- loading the module returns a callable table
+local annotate = require( "annotate" )
+
+-- annotated function definitions consist of a call to the
+-- annotate function concatenated to a normal (anonymous)
+-- function value
+local func = annotate[=[
+The `func` function takes a number and a string and prints them to
+the standard output stream.
+]=] ..
+function( a, b )
+  print( a, b )
+end
+
+func( 1, "hello" )
+^D
+</code></pre>
+
+<p>The <code>annotate</code> module itself doesn't do anything with the docstrings
+and Lua values, but hands both to modules like e.g. the
+<code>annotate.check</code> module:</p>
+
+<pre><code>$ cat &gt; test2.lua
+local annotate = require( "annotate" )
+require( "annotate.check" )  -- we ignore the return value for now
+
+local func = annotate[=[
+The `func` function takes a number and a string and prints them to
+the standard output stream.
+
+    func( a, b )
+        a: number
+        b: string
+]=] ..
+function( a, b )
+  print( a, b )
+end
+
+func( 1, "hello" )
+func( 2, true )        --&gt; line 17
+^D
+</code></pre>
+
+<p>When run, the above example will output:</p>
+
+<pre><code>$ lua test2.lua
+1       hello
+lua: func: string expected for argument no. 2 (got boolean).
+stack traceback:
+        [C]: in function 'error'
+        [compiled_arg_check]:48: in function 'argc'
+        ../src/annotate/check.lua:842: in function 'func'
+        test2.lua:17: in main chunk
+        [C]: in ?
+</code></pre>
+
+
+<h2><a name="Reference" id="Reference"></a>Reference</h2>
+
+<p>By itself the <code>annotate</code> module does nothing except providing syntax
+for associating a docstring with a Lua value. It does so using a
+<code>__call</code> metamethod that takes a string and returns an object with a
+<code>__concat</code> metamethod. So the general usage looks like this:</p>
+
+<pre><code>local annotate = require( "annotate" )
+local annotated_v = annotate[[some string]] .. v
+</code></pre>
+
+<p>What you put into the docstrings is your business, but I suggest
+<a href="http://daringfireball.net/projects/markdown/">markdown</a>, because it looks good as plain text, and you can
+convert it to many formats, e.g. using a converter like <a href="http://johnmacfarlane.net/pandoc/">pandoc</a>.
+There are also Lua libraries for converting markdown texts.</p>
+
+
+<p>To actually do something with the annotations you need handler modules
+that get registered with the <code>annotate</code> module. For this the
+<code>annotate</code> module provides a <code>register</code> method:</p>
+
+<pre><code>annotate:register( function( v, docstring ) ... end [, replace] )
+</code></pre>
+
+<p>There are two kinds of callback functions, those that wrap or replace
+the original value, and those that don't. For the former kind, the
+<code>replace</code> argument must evaluate to a true value. Those callbacks are
+called in the order of registration, and they must return the
+replacement value. The non-replacing kind of callback is called after
+all modifying callbacks are handled, but the order in which they are
+called is unspecified (and shouldn't matter anyway). Their return
+values are ignored.</p>
+
+
+<h3>The annotate.check Module</h3>
+
+<p>The <code>annotate.check</code> module registers itself with the <code>annotate</code>
+module when require'd (see above). For every function that gets
+annotated, it parses the given docstring and extracts argument and
+return type information from a special function signature in the
+docstring. It then replaces the original function with a type checking
+version. Various fields in the <code>annotate.check</code> module table can be
+used to fine-tune the type checking (see below).</p>
+
+
+<h4>Function Signature Syntax</h4>
+
+<p>The <code>annotate.check</code> module scans paragraphs (sequences of characters
+delimited by <code>\n\n</code>) in the docstring and takes the first that looks
+like a function signature as used in the <a href="http://www.lua.org/manual/5.2/manual.html#6.1">Lua reference manual</a>.
+A function signature starts with a name or function designator (module
+names + function name, delimited by <code>.</code>), followed by a parameter
+list in parentheses, an optional return value specification, and if
+necessary a mapping of parameter names to types. You can put Lua-style
+single line comments at all places where whitespace is allowed.</p>
+
+
+
+<ul><li><p>Function Designator:</p>
+    
+    <p>A function designator is either a function name (a Lua
+    identifier), or a field (Lua identifier) in a table (also a Lua
+    identifier), as usual separated by <code>.</code> for module functions or <code>:</code>
+    for methods. The table itself can be a field in another module
+    table, and so on. This is better shown by example, than explained.
+    The following are valid function designators:</p>
+    
+    <ul><li><code>func</code></li>
+        <li><code>mod.func</code></li>
+        <li><code>mod:func</code></li>
+        <li><code>mod1.mod2.func</code></li>
+        <li><code>mod1.mod2:func</code></li>
+        <li>etc.</li>
+    </ul></li>
+    <li><p>Parameter List:</p>
+    
+    <p>The parameter list is a sequence of names, optionally delimited by
+    commas (<code>,</code>). Parts/or all of the parameter list can be enclosed
+    in square brackets (<code>[]</code>) to denote optional parameters. Those
+    optional parameter sublists can be nested as well. The last
+    element of the parameter list can be the special vararg parameter
+    <code>...</code>. The whole parameter list is enclosed in parentheses. The
+    parameter names have to be mapped to type names in the parameter
+    mapping section (see below), but for simple cases you can use the
+    type names directly as parameter names, and omit the mapping.</p></li>
+    <li><p>Return Value Specification:</p>
+    
+    <p>If the function returns one or more values, you need one or more
+    patterns for return value types. Each pattern is started by an
+    arrow <code>=&gt;</code> (you can use more than one <code>=</code>) and followed by a
+    regular expression. Multiple patterns denote alternatives.</p>
+    
+    <p>The regular expressions are built from type names that are
+    combined via the usual regular expression operators (listed in
+    descending order of precedence):</p>
+    
+    <ul><li><p>a type name registered in the <code>types</code> sub-table (see below)</p></li>
+        <li><p><code>(</code> pattern <code>)</code></p>
+        
+        <p>for explicit grouping</p></li>
+        <li><p>pattern<code>*</code> or pattern<code>?</code></p>
+        
+        <p><code>*</code> means zero or more occurrences of the pattern, <code>?</code> means
+        zero or one</p></li>
+        <li><p>pattern1 <code>/</code> pattern2</p>
+        
+        <p>an alternative, matches pattern1 <em>or</em> pattern2</p></li>
+        <li><p>pattern1 <code>,</code> pattern2</p>
+        
+        <p>a sequence of two patterns, matches pattern1 <em>and then</em>
+        pattern2</p></li>
+    </ul></li>
+    <li><p>Parameter Mapping:</p>
+    
+    <p>If the parameter list of the function has any parameter names in
+    it, you need to map those names to actual types as defined in the
+    <code>types</code> sub-table. This is done by specifying the parameter name,
+    followed by a colon (<code>:</code>), followed by a type name or a list of
+    alternative types delimited by <code>/</code> (no full regular expressions
+    allowed here except for <code>...</code>). The special vararg parameter
+    (<code>...</code>) can use full regular expressions as in the return value
+    specifications (see above). Specifying a type for the implicit
+    <code>self</code> parameter in methods is optional, the default is <code>object</code>
+    which matches tables and userdata.</p></li>
+</ul><h5>Examples</h5>
+
+<pre><code class="no-highlight">pcall( f [, arg1, ...] ) ==&gt; boolean, any*
+    f   : function  -- the function to call in protected mode
+    arg1: any       -- first argument to f
+    ... : any*      -- remaining arguments to f
+
+tonumber( any [, number] ) ==&gt; nil/number
+
+table.concat( list [, sep [, i [, j]]] ) ==&gt; string
+    list: table     -- an array of strings
+    sep : string    -- a separator, defaults to ""
+    i   : integer   -- starting index, defaults to 1
+    j   : integer   -- end index, defaults to #list
+
+table.insert( list, [pos,] value )
+    list : table    -- an array
+    pos  : integer  -- index where to insert (defaults to #list)
+    value: any      -- value to insert
+
+io.open( filename [, mode] )
+        ==&gt; file               -- on success
+        ==&gt; nil,string,number  -- in case of error
+    filename: string           -- the name of the file
+    mode    : string           -- flags similar to fopen(3)
+
+file:read( ... ) ==&gt; (string/number/nil)*
+    ...: (string/number)*      -- format specifiers
+
+file:seek( [whence [, offset]] ) ==&gt; number
+                                 ==&gt; nil, string
+    self  : file               -- would default to `object`
+    whence: string
+    offset: number
+
+os.execute( [string] )
+        ==&gt; boolean
+        ==&gt; boolean/nil, string, number
+
+mod.obj:method( [a [, b] [, c],] [d,] ... )
+        ==&gt; boolean            -- when successful
+        ==&gt; nil, string        -- in case of error
+      a: string/function       -- a string or a function
+      b: userdata              -- a userdata
+                               -- don't break the paragraph!
+      c: boolean               -- a boolean flag
+      d: number                -- a number
+    ...: ((table, string/number) / boolean)*
+</code></pre>
+
+
+<h4>Predefined Type Checking Functions</h4>
+
+<p>The table <code>check.types</code> (where <code>check</code> is the result of the
+<code>require</code>-call) comes with some predefined type checking functions.
+Those predefined type checking functions only cover basic Lua
+data types, see below for how to add your own application specific
+checking functions.</p>
+
+<ul><li><p><code>nil</code></p>
+    
+    <p>Matches the nil type/value.</p></li>
+    <li><p><code>boolean</code></p>
+    
+    <p>Matches either <code>true</code> or <code>false</code>.</p></li>
+    <li><p><code>number</code></p>
+    
+    <p>Matches a Lua number.</p></li>
+    <li><p><code>string</code></p>
+    
+    <p>Matches a Lua string.</p></li>
+    <li><p><code>table</code></p>
+    
+    <p>Matches a Lua table.</p></li>
+    <li><p><code>userdata</code></p>
+    
+    <p>Matches a userdata (light and full).</p></li>
+    <li><p><code>function</code></p>
+    
+    <p>Matches a Lua function (but not a callable userdata or table).</p></li>
+    <li><p><code>thread</code></p>
+    
+    <p>Matches a Lua coroutine.</p></li>
+    <li><p><code>any</code></p>
+    
+    <p>Matches any one value (including nil).</p></li>
+    <li><p><code>object</code></p>
+    
+    <p>Matches a Lua table or a userdata, but doesn't check for a
+    metatable.</p></li>
+    <li><p><code>true</code></p>
+    
+    <p>Matches any Lua value except <code>nil</code> and <code>false</code></p></li>
+    <li><p><code>false</code></p>
+    
+    <p>Matches only <code>nil</code> and <code>false</code>.</p></li>
+</ul><p>Some optional type checkers are defined if the necessary modules and
+functions are available:</p>
+
+<ul><li><p><code>integer</code></p>
+    
+    <p>Matches numbers without fractional part. Requires <code>math.floor</code>.</p></li>
+    <li><p><code>file</code></p>
+    
+    <p>Matches an opened file handle. Requires <code>io.type</code>.</p></li>
+    <li><p><code>pattern</code></p>
+    
+    <p>Matches an <a href="http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html">LPeg</a> pattern. Requires <code>LPeg.type</code>.</p></li>
+</ul><h4>Tuning the Type Checker</h4>
+
+<p>Checking for basic Lua types already helps, but typically support for
+application specific data types is needed. To register a new type
+simply add the type checking function to the <code>types</code> sub-table.</p>
+
+<pre><code>local annotate = require( "annotate" )
+local check = require( "annotate.check" )
+check.types.file = function( v )
+  return io.type( v ) == "file"
+end
+
+local func2 = annotate[=[
+    func2( [fh] )
+        fh: file  -- a file handle
+]=] ..
+function( out )
+  out = out or io.stdout
+  out:write( "Hello World!\n" )
+end
+</code></pre>
+
+<p>You can disable type checking for the following function definitions
+by setting the <code>enabled</code> field to false. In that case the
+<code>annotate.check</code> module doesn't replace the original function.</p>
+
+<pre><code>check.enabled = false
+</code></pre>
+
+<p>Previously defined functions are unaffected by this change.</p>
+
+<p>You can selectively enable/disable type checking for arguments and
+return values using the <code>arguments</code> and <code>return_values</code> flags. Again,
+this only affects functions defined after this change.</p>
+
+<pre><code>check.arguments = true
+check.return_values = false
+</code></pre>
+
+<p>By default the type checking module throws an error for undefined type
+checkers, or if a docstring for a function does not have a function
+signature. You can change that by providing a custom error function:</p>
+
+<pre><code>check.errorf = function( msg ) print( msg ) end -- print warning
+-- check.errorf = function() end -- ignore completely
+</code></pre>
+
+
+<h2><a name="Download" id="Download"></a>Download</h2>
+
+<p>The source code (with documentation and test scripts) is available on
+<a href="https://github.com/siffiejoe/lua-annotate/">github</a>.</p>
+
+
+
+<h2><a name="Installation" id="Installation"></a>Installation</h2>
+
+<p>There are two ways to install this module, either using luarocks (if
+this module already ended up in the <a href="http://luarocks.org/repositories/rocks/" title="Main Repository">main luarocks repository</a>) or
+manually.</p>
+
+<p>Using luarocks, simply type:</p>
+
+<pre><code>luarocks install annotate
+</code></pre>
+
+<p>To install the module manually just drop <code>annotate.lua</code> and
+<code>annotate/check.lua</code> somewhere into your Lua <code>package.path</code>. You will
+also need <a href="http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html">LPeg</a> (at least for the type checker).</p>
+
+
+
+<h2><a name="Contact" id="Contact"></a>Contact</h2>
+
+<p>Philipp Janda, siffiejoe(a)gmx.net</p>
+
+<p>Comments and feedback are always welcome.</p>
+
+
+<h2><a name="License" id="License"></a>License</h2>
+
+<p>annotate is <em>copyrighted free software</em> distributed under the MIT
+license (the same license as Lua 5.1). The full license text follows:</p>
+
+<pre><code class="no-highlight">annotate (c) 2013 Philipp Janda
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHOR OR COPYRIGHT HOLDER BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</code></pre>
+
+
+
+</body></html>
