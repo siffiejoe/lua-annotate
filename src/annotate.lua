@@ -16,7 +16,6 @@ local decorator_meta = {
   __concat = function( self, v )
     local docstring, data = self.docstring, {}
     for i = 1, #self.callbacks_r do
-      local cb = self.callbacks_r[ i ]
       v = self.callbacks_r[ i ]( v, docstring, data )
     end
     for cb in pairs( self.callbacks ) do
