@@ -764,7 +764,7 @@ local function compile_typespec( input, types, do_arg, do_ret, warn )
   warn = warn or error
   local spec, name, is_method, args, rets, argtypes = L.match( g, input )
   if not spec then
-    warn( "[check]: ".."docstring does not contain type specification!" )
+    warn( "[check]: docstring does not contain type specification!" )
   else
     name = is_method and name:gsub( ":", "." ) or name
     local arg_check_func, ret_check_func

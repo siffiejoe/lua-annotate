@@ -14,12 +14,12 @@ local M = {
 
 local decorator_meta = {
   __concat = function( self, v )
-    local docstring, data = self.docstring, {}
+    local docstring = self.docstring
     for i = 1, #self.callbacks_r do
-      v = self.callbacks_r[ i ]( v, docstring, data )
+      v = self.callbacks_r[ i ]( v, docstring )
     end
     for cb in pairs( self.callbacks ) do
-      cb( v, docstring, data )
+      cb( v, docstring )
     end
     return v
   end

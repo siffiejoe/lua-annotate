@@ -236,7 +236,7 @@ single line comments at all places where whitespace is allowed.
 
     table.insert( list, [pos,] value )
         list : table    -- an array
-        pos  : integer  -- index where to insert (defaults to #list)
+        pos  : integer  -- index where to insert (defaults to #list+1)
         value: any      -- value to insert
 
     io.open( filename [, mode] )
