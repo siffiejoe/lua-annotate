@@ -552,7 +552,7 @@ do
   -- return values
   g.retlist = Ct( Cc"alt" * (retsym * V"seq")^0 )
   -- argument type specifications
-  g.paramspec = Ct( V"argspec"^0 * V"varargspec"^-1 )
+  g.paramspec = Ct( V"argspec"^0 * V"varargspec"^-1 * V"argspec"^0 )
   g.argspec = Ct( C( id ) * _ * P":" * _ * C( id ) * _ * (P"/" * _ * C( id ) * _)^0 )
   g.varargspec = Ct( varargs * P":" * _ * V"seq" )
   -- common to return values and vararg type specifications
