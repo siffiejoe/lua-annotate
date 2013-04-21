@@ -119,69 +119,69 @@ end )
 
 
 -- examples from the readme
-test_all( "pcall", function()
-  annotate[=[
+test_all( "pcall example", function()
+  local f = annotate[=[
     pcall( f [, arg1, ...] ) ==> boolean, any*
         f   : function  -- the function to call in protected mode
         arg1: any       -- first argument to f
         ... : any*      -- remaining arguments to f
-  ]=]
+  ]=] .. function() end
 end )
-test_all( "tonumber", function()
-  annotate[=[
+test_all( "tonumber example", function()
+  local f = annotate[=[
     tonumber( any [, number] ) ==> nil/number
-  ]=]
+  ]=] .. function() end
 end )
-test_all( "table.concat", function()
-  annotate[=[
+test_all( "table.concat example", function()
+  local f = annotate[=[
     table.concat( list [, sep [, i [, j]]] ) ==> string
         list: table     -- an array of strings
         sep : string    -- a separator, defaults to ""
         i   : integer   -- starting index, defaults to 1
         j   : integer   -- end index, defaults to #list
-  ]=]
+  ]=] .. function() end
 end )
-test_all( "table.insert", function()
-  annotate[=[
+test_all( "table.insert example", function()
+  local f = annotate[=[
     table.insert( list, [pos,] value )
         list : table    -- an array
-        pos  : integer  -- index where to insert (defaults to #list)
+        pos  : integer  -- index where to insert (defaults to #list+1)
         value: any      -- value to insert
-  ]=]
+  ]=] .. function() end
 end )
-test_all( "io.open", function()
-  annotate[=[
+test_all( "io.open example", function()
+  local f = annotate[=[
     io.open( filename [, mode] )
             ==> file               -- on success
             ==> nil,string,number  -- in case of error
         filename: string           -- the name of the file
         mode    : string           -- flags similar to fopen(3)
-  ]=]
+  ]=] .. function() end
 end )
-test_all( "file:read", function()
-  annotate[=[
+test_all( "file:read example", function()
+  local f = annotate[=[
     file:read( ... ) ==> (string/number/nil)*
         ...: (string/number)*      -- format specifiers
-  ]=]
+  ]=] .. function() end
 end )
-test_all( "file:seek", function()
-  annotate[=[
+test_all( "file:seek example", function()
+  local f = annotate[=[
     file:seek( [whence [, offset]] ) ==> number
                                      ==> nil, string
         self  : file               -- would default to `object`
         whence: string
         offset: number
-  ]=]
+  ]=] .. function() end
 end )
-test_all( "os.execute", function()
-  annotate[=[
+test_all( "os.execute example", function()
+  local f = annotate[=[
     os.execute( [string] )
             ==> boolean
             ==> boolean/nil, string, number
-  ]=]
+  ]=] .. function() end
 end )
-test_all( "mod.obj:method", function()
-  annotate[=[
+test_all( "mod.obj:method example", function()
+  local f = annotate[=[
     mod.obj:method( [a [, b] [, c],] [d,] ... )
             ==> boolean            -- when successful
             ==> nil, string        -- in case of error
@@ -191,7 +191,7 @@ test_all( "mod.obj:method", function()
           c: boolean               -- a boolean flag
           d: number                -- a number
         ...: ((table, string/number) / boolean)*
-  ]=]
+  ]=] .. function() end
 end )
 
 
