@@ -535,14 +535,14 @@ do
   local ws = S" \t\r\n\v\f"
   local _ = ((ws + comment) - pbreak)^0
   local letter = R( "az", "AZ" ) + P"_"
-  local digit = R( "09" )
+  local digit = R"09"
   local id = letter * (letter+digit)^0
   local varargs = C( P"..." ) *_
   local retsym = P"="^1 * P">" * _
 
-  g[ 1 ] = _ * (V"paragraph" - V"typespec")^0 * V"typespec" * V"paragraph"^0 * P( -1 )
+  g[ 1 ] = ws^0 * (V"paragraph" - V"typespec")^0 * V"typespec" * V"paragraph"^0 * P( -1 )
   g.paragraph = (P( 1 ) - pbreak)^1 * ws^0
-  g.typespec = C( V"funcname" * P"(" * _ * Ct( V"arglistv" ) * P")" * _ * V"retlist" * V"paramspec" ) * ws^0
+  g.typespec = C( _ * V"funcname" * P"(" * _ * Ct( V"arglistv" ) * P")" * _ * V"retlist" * V"paramspec" ) * ws^0
   g.funcname = C( id * (P"." * id)^0 * ((P":" * id * Cc( true )) + Cc( false )) ) * _
   -- argument list
   g.arglistv = (V"arg" + V"optargs")^0 * (P","^-1 * _ * (V"optargsv" + varargs))^-1
