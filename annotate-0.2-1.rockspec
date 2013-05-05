@@ -1,5 +1,5 @@
 package = "annotate"
-version = "0.1-1"
+version = "0.2-1"
 source = {
   url = "${SRCURL}",
 }
@@ -23,6 +23,8 @@ build = {
   modules = {
     [ "annotate" ] = "src/annotate.lua",
     [ "annotate.check" ] = "src/annotate/check.lua",
+    [ "annotate.help" ] = "src/annotate/help.lua",
+    [ "annotate.test" ] = "src/annotate/test.lua",
   }
 }
 
