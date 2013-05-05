@@ -56,7 +56,7 @@ do
   g.paragraph = (P( 1 ) - pbreak)^1 * ws^0
   -- for extracting a function signature if there is one
   g.typespec = C( _2 * V"funcname" * P"(" * _2 * V"arglist" * P")" ) * V"paragraph"^-1 * ws^0
-  g.funcname = id * _2 * (P"." * _2 * id * _2)^0 * (P":" * _2 * id)^-1 * _2
+  g.funcname = id * (P"." * id)^0 * (P":" * id)^-1 * _2
   g.arglist = (id+S"[],."+((ws+comment)-pbreak)^1)^0
   -- test specification
   g.testspec = V"header" * Ct( (V"lua_line" + Ct( V"out_line"^1 ) + V"empty_line")^1 ) * ws^0
@@ -152,7 +152,12 @@ local function preamble( verbosity, caption )
   end
 end
 
+local delim = s_rep( "#", 70 )
+
 local function report( verbosity, caption, results, errors )
+  if #errors > 0 then
+    io_stderr:write( delim, "\n" )
+  end
   if verbosity > 0 or #errors > 0 then
     io_stderr:write( "### [", results, "] ", caption, "\n" )
   end
@@ -160,7 +165,7 @@ local function report( verbosity, caption, results, errors )
     for i = 1, #errors do
       io_stderr:write( errors[ i ] )
     end
-    io_stderr:write( s_rep( "#", 70 ), "\n" )
+    io_stderr:write( delim, "\n" )
   end
 end
 
