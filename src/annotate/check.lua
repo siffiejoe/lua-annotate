@@ -3,6 +3,7 @@ local assert = assert
 local require = assert( require )
 local annotate = require( "annotate" )
 local table = require( "table" )
+local string = require( "string" )
 local L = require( "lpeg" )
 local _VERSION = assert( _VERSION )
 local pairs = assert( pairs )
@@ -15,6 +16,8 @@ local setmetatable = assert( setmetatable )
 local tinsert = assert( table.insert )
 local tconcat = assert( table.concat )
 local tsort = assert( table.sort )
+local sformat = assert( string.format )
+local lpegmatch = assert( L.match )
 local loadstring = assert( loadstring or load )
 local unpack = assert( unpack or table.unpack )
 -- optional
@@ -288,7 +291,7 @@ do
   local function n_args( n, fmt )
     local s = ""
     for i = 1, n do
-      s = s .. fmt:format( i )
+      s = s .. sformat( fmt, i )
       if i ~= n then
         s = s .. ", "
       end
@@ -762,7 +765,7 @@ end
 -- compiles the given string into argument and return checking functions
 local function compile_typespec( input, types, do_arg, do_ret, warn )
   warn = warn or error
-  local spec, name, is_method, args, rets, argtypes = L.match( g, input )
+  local spec, name, is_method, args, rets, argtypes = lpegmatch( g, input )
   if not spec then
     warn( "[check]: docstring does not contain type specification!" )
   else

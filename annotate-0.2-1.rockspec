@@ -7,9 +7,8 @@ description = {
   summary = "A decorator for docstrings and type checking",
   detailed = [[
     This Lua module provides a decorator that allows to associate Lua
-    values with docstrings. A plugin that parses function signatures
-    in those docstrings and compiles them to argument and return value
-    type checking functions is included.
+    values with docstrings. Plugins for typechecking using function
+    signatures, interactive help, and simple unit testing are included.
   ]],
   homepage = "${HPURL}",
   license = "MIT"
