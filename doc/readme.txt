@@ -458,14 +458,22 @@ or a markdown header (in atx-style format).
 
 After the header, any line indented 4 spaces is either a line
 containing Lua code, or a line containing output of the Lua code
-before. Lua code starts with "`> `" or "`>> `".
+before. Lua code starts with "`> `" or "`>> `". Each line of Lua code
+is compiled as a separate chunk if possible (like in the interactive
+interpreter). All tests for a single annotation share a custom
+environment containing a modified `print` function, and the global
+variable `F` that refers to the value the annotation is for (useful
+for testing local functions), as well as `__index` access to the
+default global environment.
 
 The output lines are matched against values returned from the Lua
-chunks (via `return` or `=`), against the output of the `print`
-function, and against error messages. The string `...` in an output
-line is equivalent to the string pattern `.-`, a group of one or more
-whitespace characters is equivalent to `%s+`. Additionally, whitespace
-at the end of the output is ignored.
+chunks (via `return` or `=`), against error messages, and against the
+output of the `print` function (but only if used directly in the test
+code, the output of Lua's standard `print` function cannot be
+matched). The string `...` in an output line is equivalent to the
+string pattern `.-`, a group of one or more whitespace characters is
+equivalent to `%s+`. Additionally, whitespace at the end of the output
+is ignored.
 
 An empty line (containing only whitespace) is skipped (unless it
 starts with 4 spaces in which case it is considered an output line).

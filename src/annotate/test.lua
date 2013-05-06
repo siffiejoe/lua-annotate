@@ -98,7 +98,7 @@ local function incomplete( msg )
 end
 
 
-local function prepare_env()
+local function prepare_env( f )
   local env, out = {}, { n = 0 }
   env._G = env
   local function p( ... )
@@ -114,6 +114,7 @@ local function prepare_env()
     end
   end
   env.print = p
+  env.F = f
   setmetatable( env, { __index = _G } )
   return env, out, p
 end
@@ -174,7 +175,7 @@ local function run_test( test, totals, verbosity )
   local ok, fail, n = 0, 0, 0
   local results, errors = "", {}
   local caption = get_caption( test.v, test.sig )
-  local env, out, p = prepare_env()
+  local env, out, p = prepare_env( test.v )
   preamble( verbosity, caption )
   local j, buffer, _ = 1, nil
   for i = 1, #test.data do

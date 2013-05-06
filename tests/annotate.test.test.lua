@@ -49,11 +49,13 @@ This is just another function.
     no output here
     > = 2+"x"
     ...attempt to perform arithmetic...
+    > = F( 1, 2 )
+    3
     > = 5
     4
 
 ]=] ..
-function( a, b ) end
+function( a, b ) return a + b end
 
 
 third = annotate[=[
