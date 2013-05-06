@@ -264,7 +264,7 @@ local M_meta = {
       run_test( tests[ i ], totals, verbosity )
     end
     io_stderr:write( "### TOTAL: ", totals.ok, " ok, ", totals.fail,
-                     " fail, ", totals.n, " total\n")
+                     " failed, ", totals.n, " total\n")
     return totals.fail == 0
   end,
 }

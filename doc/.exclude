@@ -1,4 +1,5 @@
 # exclude code blocks containing one of following strings from syntax
 # highlighting:
 mod.obj:method
+TOTAL:
 

@@ -431,8 +431,8 @@ contains a type signature (as for the `annotate.check` module, see
 there) *before* the test code section. Test results and statistics are
 written to the standard error channel.
 
-If you want to take unit testing really serious, the test code will
-become way to big to be included in the docstrings. In this case you
+If you want to take unit testing really seriously, the test code will
+become way too big to be included in the docstrings. In this case you
 should consider using a designated unit testing module for most of the
 tests, and only use this module to make sure the examples in the
 documentation stay correct.
@@ -458,7 +458,7 @@ or a markdown header (in atx-style format).
 
 After the header, any line indented 4 spaces is either a line
 containing Lua code, or a line containing output of the Lua code
-before. Lua code starts with `> ` or `>> `.
+before. Lua code starts with "`> `" or "`>> `".
 
 The output lines are matched against values returned from the Lua
 chunks (via `return` or `=`), against the output of the `print`
@@ -511,7 +511,7 @@ not indented at least 4 spaces.
 The result is:
 
     ### [++-++] function func( n )
-    ### TOTAL: 5 ok, 0 fail, 5 total
+    ### TOTAL: 4 ok, 1 failed, 5 total
 
 
 ##                             Download                             ##
