@@ -49,7 +49,7 @@ do
   local letter = R( "az", "AZ" ) + P"_"
   local digit = R"09"
   local id = letter * (letter+digit)^0
-  local indent = P" "^4
+  local indent = P"    "
   local title = S"Ee"*S"Xx"*S"Aa"*S"Mm"*S"Pp"*S"Ll"*S"Ee"*(S"Ss"^-1)
 
   g[ 1 ] = ws^0 * Ct( (V"typespec" + (V"paragraph" - V"testspec"))^0 ) * V"testspec" * V"paragraph"^0 * P( -1 )

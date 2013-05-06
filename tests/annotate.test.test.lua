@@ -90,5 +90,23 @@ Example:
 ]=] ..
 function() end
 
+seventh = annotate[=[
+    seventh( [a,] ... ) ==> number
+        a  : number
+        ...: string*
+
+### EXAMPLES ###
+
+    > function f( a )
+    >> return 2*a
+    >> end
+    > =f( 10 )
+    20
+    > =f( 20 )
+    40
+
+]=] ..
+function( a, ... ) end
+
 test( tonumber( os.getenv( "VERBOSE" ) ) )
 
