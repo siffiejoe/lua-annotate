@@ -441,14 +441,22 @@ or a markdown header (in atx-style format).</p>
     </ul></li>
 </ul><p>After the header, any line indented 4 spaces is either a line
 containing Lua code, or a line containing output of the Lua code
-before. Lua code starts with "<code>&gt;</code>" or "<code>&gt;&gt;</code>".</p>
+before. Lua code starts with "<code>&gt; </code>" or "<code>&gt;&gt; </code>". Each line of Lua code
+is compiled as a separate chunk if possible (like in the interactive
+interpreter). All tests for a single annotation share a custom
+environment containing a modified <code>print</code> function, and the global
+variable <code>F</code> that refers to the value the annotation is for (useful
+for testing local functions), as well as <code>__index</code> access to the
+default global environment.</p>
 
 <p>The output lines are matched against values returned from the Lua
-chunks (via <code>return</code> or <code>=</code>), against the output of the <code>print</code>
-function, and against error messages. The string <code>...</code> in an output
-line is equivalent to the string pattern <code>.-</code>, a group of one or more
-whitespace characters is equivalent to <code>%s+</code>. Additionally, whitespace
-at the end of the output is ignored.</p>
+chunks (via <code>return</code> or <code>=</code>), against error messages, and against the
+output of the <code>print</code> function (but only if used directly in the test
+code, the output of Lua's standard <code>print</code> function cannot be
+matched). The string <code>...</code> in an output line is equivalent to the
+string pattern <code>.-</code>, a group of one or more whitespace characters is
+equivalent to <code>%s+</code>. Additionally, whitespace at the end of the output
+is ignored.</p>
 
 <p>An empty line (containing only whitespace) is skipped (unless it
 starts with 4 spaces in which case it is considered an output line).
