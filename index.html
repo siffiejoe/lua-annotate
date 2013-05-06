@@ -370,6 +370,135 @@ signature. You can change that by providing a custom error function:</p>
 </code></pre>
 
 
+<h3>The annotate.help Module</h3>
+
+<p>The <code>annotate.help</code> module registers itself with the <code>annotate</code>
+module when require'd to provide interactive help for all functions
+with an annotation. It can also wrap other help modules (like e.g.
+<a href="https://github.com/dlaurie/lua-ihelp/">ihelp</a>) to delegate help requests for values <em>not</em> having a
+docstring.</p>
+
+<pre><code>&gt; help = require( "annotate.help" )
+&gt; help( somefunc )
+output of somefunc's docstring ...
+</code></pre>
+
+<p>or</p>
+
+<pre><code>&gt; help = require( "annotate.help" ):wrap( help_func )
+&gt; help( someotherfunc )
+</code></pre>
+
+
+
+<h3>The annotate.test Module</h3>
+
+<p>The <code>annotate.test</code> module is a simple unit testing module inspired by
+Python's <a href="http://en.wikipedia.org/wiki/Doctest">doctest</a>. The idea is to provide code examples in the
+docstrings using the syntax of the interactive Lua interpreter. The
+code examples can be executed and verified as working Lua code by this
+module. It registers itself with the <code>annotate</code> module when require'd
+and stores the test code it finds in the docstrings in an internal
+table for later execution. The tests are started by calling the result
+of the <code>require( "annotate.test" )</code> call.</p>
+
+<pre><code>local annotate = require( "annotate" )
+local test = require( "annotate.test" )
+-- ... some function definitions with annotations
+test( 1 ) -- parameter is output verbosity (0-3, default is 1)
+</code></pre>
+
+
+<p>The test output quotes the function name, if the docstring also
+contains a type signature (as for the <code>annotate.check</code> module, see
+there) <em>before</em> the test code section. Test results and statistics are
+written to the standard error channel.</p>
+
+<p>If you want to take unit testing really seriously, the test code will
+become way too big to be included in the docstrings. In this case you
+should consider using a designated unit testing module for most of the
+tests, and only use this module to make sure the examples in the
+documentation stay correct.</p>
+
+
+<h4>Test Syntax</h4>
+
+<p>The beginning of the test code section is denoted by a simple header
+or a markdown header (in atx-style format).</p>
+
+<ul><li><p>Simple Header:</p>
+    <ul><li>The word <code>example</code> or <code>examples</code> at the beginning of a
+        paragraph, optionally followed by a colon (<code>:</code>), and zero or
+        more empty lines (containing only whitespace). </li>
+        <li>The case of <code>example</code>/<code>examples</code> doesn't matter.</li>
+    </ul></li>
+    <li><p>Markdown Header:</p>
+    <ul><li>One or more <code>#</code> followed by optional whitespace, the word
+        <code>example</code> or <code>examples</code> (again case doesn't matter), and zero
+        or more empty lines (containing only whitespace).</li>
+        <li>The markdown header line can optionally be "closed" by
+        whitespace and any number of <code>#</code>. </li>
+    </ul></li>
+</ul><p>After the header, any line indented 4 spaces is either a line
+containing Lua code, or a line containing output of the Lua code
+before. Lua code starts with "<code>&gt;</code>" or "<code>&gt;&gt;</code>".</p>
+
+<p>The output lines are matched against values returned from the Lua
+chunks (via <code>return</code> or <code>=</code>), against the output of the <code>print</code>
+function, and against error messages. The string <code>...</code> in an output
+line is equivalent to the string pattern <code>.-</code>, a group of one or more
+whitespace characters is equivalent to <code>%s+</code>. Additionally, whitespace
+at the end of the output is ignored.</p>
+
+<p>An empty line (containing only whitespace) is skipped (unless it
+starts with 4 spaces in which case it is considered an output line).
+The test/example section ends with the first non-empty line that is
+not indented at least 4 spaces.</p>
+
+
+<h5>Examples</h5>
+
+<pre><code>local annotate = require( "annotate" )
+local test = require( "annotate.test" )
+
+func = annotate[=[
+This is function `func`.
+
+   func( n ) ==&gt; number
+       n: number
+
+Examples:
+    &gt; return func( 1 )
+    1
+    &gt; function f( n )
+    &gt;&gt; return func( n )
+    &gt;&gt; end
+    &gt; = f( 2 )
+    2
+    &gt; = f( 2 ) -- this test will fail!
+    3
+    &gt; print( "hello\nworld" )
+    hello
+    world
+    &gt; = 2+"x"
+    ...attempt to perform arithmetic...
+
+This is the end of the test code!
+]=] ..
+function( n )
+  return n
+end
+
+test() -- run the tests
+</code></pre>
+
+<p>The result is:</p>
+
+<pre><code class="no-highlight">### [++-++] function func( n )
+### TOTAL: 4 ok, 1 failed, 5 total
+</code></pre>
+
+
 <h2><a name="Download" id="Download"></a>Download</h2>
 
 <p>The source code (with documentation and test scripts) is available on
@@ -389,8 +518,9 @@ manually.</p>
 </code></pre>
 
 <p>To install the module manually just drop <code>annotate.lua</code> and
-<code>annotate/check.lua</code> somewhere into your Lua <code>package.path</code>. You will
-also need <a href="http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html">LPeg</a> (at least for the type checker).</p>
+<code>annotate/*.lua</code> somewhere into your Lua <code>package.path</code>. You will
+also need <a href="http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html">LPeg</a> (at least for the type checker, and the test
+module).</p>
 
 
 
