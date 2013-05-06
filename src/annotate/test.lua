@@ -50,7 +50,8 @@ do
   local digit = R"09"
   local id = letter * (letter+digit)^0
   local indent = P"    "
-  local title = S"Ee"*S"Xx"*S"Aa"*S"Mm"*S"Pp"*S"Ll"*S"Ee"*(S"Ss"^-1)
+  local title = S"Ee"*S"Xx"*S"Aa"*S"Mm"*S"Pp"*S"Ll"*S"Ee"*(S"Ss"^-1) +
+                S"Tt"*S"Ee"*S"Ss"*S"Tt"*(S"Ss"^-1)
 
   g[ 1 ] = ws^0 * Ct( (V"typespec" + (V"paragraph" - V"testspec"))^0 ) * V"testspec" * V"paragraph"^0 * P( -1 )
   g.paragraph = (P( 1 ) - pbreak)^1 * ws^0

@@ -444,15 +444,18 @@ The beginning of the test code section is denoted by a simple header
 or a markdown header (in atx-style format).
 
 *   Simple Header:
-    *   The word `example` or `examples` at the beginning of a
-        paragraph, optionally followed by a colon (`:`), and zero or
-        more empty lines (containing only whitespace). 
-    *   The case of `example`/`examples` doesn't matter.
+    *   The word `example` (`examples`) or `test` (`tests`) at the
+        beginning of a paragraph, optionally followed by a colon
+        (`:`), and zero or more empty lines (containing only
+        whitespace). 
+    *   The case of `example`/`examples`/`test`/`tests` doesn't
+        matter.
 
 *   Markdown Header:
     *   One or more `#` followed by optional whitespace, the word
-        `example` or `examples` (again case doesn't matter), and zero
-        or more empty lines (containing only whitespace).
+        `example` (`examples`) or `test` (`tests`) (again case doesn't
+        matter), and zero or more empty lines (containing only
+        whitespace).
     *   The markdown header line can optionally be "closed" by
         whitespace and any number of `#`. 
 

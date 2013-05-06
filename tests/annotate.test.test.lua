@@ -77,7 +77,7 @@ Examples:
 function() end
 
 fifth = annotate[=[
-Example:
+Test:
 
     > function f()
 
