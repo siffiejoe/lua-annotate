@@ -388,18 +388,144 @@ signature. You can change that by providing a custom error function:
     -- check.errorf = function() end -- ignore completely
 
 
+###                    The annotate.help Module                    ###
+
+The `annotate.help` module registers itself with the `annotate`
+module when require'd to provide interactive help for all functions
+with an annotation. It can also wrap other help modules (like e.g.
+[ihelp][10]) to delegate help requests for values *not* having a
+docstring.
+
+    > help = require( "annotate.help" )
+    > help( somefunc )
+    output of somefunc's docstring ...
+
+or
+
+    > help = require( "annotate.help" ):wrap( help_func )
+    > help( someotherfunc )
+
+  [10]:  https://github.com/dlaurie/lua-ihelp/
+
+
+###                    The annotate.test Module                    ###
+
+The `annotate.test` module is a simple unit testing module inspired by
+Python's [doctest][11]. The idea is to provide code examples in the
+docstrings using the syntax of the interactive Lua interpreter. The
+code examples can be executed and verified as working Lua code by this
+module. It registers itself with the `annotate` module when require'd
+and stores the test code it finds in the docstrings in an internal
+table for later execution. The tests are started by calling the result
+of the `require( "annotate.test" )` call.
+
+    local annotate = require( "annotate" )
+    local test = require( "annotate.test" )
+    -- ... some function definitions with annotations
+    test( 1 ) -- parameter is output verbosity (0-3, default is 1)
+
+  [11]:  http://en.wikipedia.org/wiki/Doctest
+
+The test output quotes the function name, if the docstring also
+contains a type signature (as for the `annotate.check` module, see
+there) *before* the test code section. Test results and statistics are
+written to the standard error channel.
+
+If you want to take unit testing really serious, the test code will
+become way to big to be included in the docstrings. In this case you
+should consider using a designated unit testing module for most of the
+tests, and only use this module to make sure the examples in the
+documentation stay correct.
+
+
+####                          Test Syntax                         ####
+
+The beginning of the test code section is denoted by a simple header
+or a markdown header (in atx-style format).
+
+*   Simple Header:
+    *   The word `example` or `examples` at the beginning of a
+        paragraph, optionally followed by a colon (`:`), and zero or
+        more empty lines (containing only whitespace). 
+    *   The case of `example`/`examples` doesn't matter.
+
+*   Markdown Header:
+    *   One or more `#` followed by optional whitespace, the word
+        `example` or `examples` (again case doesn't matter), and zero
+        or more empty lines (containing only whitespace).
+    *   The markdown header line can optionally be "closed" by
+        whitespace and any number of `#`. 
+
+After the header, any line indented 4 spaces is either a line
+containing Lua code, or a line containing output of the Lua code
+before. Lua code starts with `> ` or `>> `.
+
+The output lines are matched against values returned from the Lua
+chunks (via `return` or `=`), against the output of the `print`
+function, and against error messages. The string `...` in an output
+line is equivalent to the string pattern `.-`, a group of one or more
+whitespace characters is equivalent to `%s+`. Additionally, whitespace
+at the end of the output is ignored.
+
+An empty line (containing only whitespace) is skipped (unless it
+starts with 4 spaces in which case it is considered an output line).
+The test/example section ends with the first non-empty line that is
+not indented at least 4 spaces.
+
+
+#####                          Examples                          #####
+
+    local annotate = require( "annotate" )
+    local test = require( "annotate.test" )
+
+    func = annotate[=[
+    This is function `func`.
+
+       func( n ) ==> number
+           n: number
+
+    Examples:
+        > return func( 1 )
+        1
+        > function f( n )
+        >> return func( n )
+        >> end
+        > = f( 2 )
+        2
+        > = f( 2 ) -- this test will fail!
+        3
+        > print( "hello\nworld" )
+        hello
+        world
+        > = 2+"x"
+        ...attempt to perform arithmetic...
+
+    This is the end of the test code!
+    ]=] ..
+    function( n )
+      return n
+    end
+
+    test() -- run the tests
+
+The result is:
+
+    ### [++-++] function func( n )
+    ### TOTAL: 5 ok, 0 fail, 5 total
+
+
 ##                             Download                             ##
 
 The source code (with documentation and test scripts) is available on
-[github][10].
+[github][12].
 
-  [10]:  https://github.com/siffiejoe/lua-annotate/
+  [12]:  https://github.com/siffiejoe/lua-annotate/
 
 
 ##                           Installation                           ##
 
 There are two ways to install this module, either using luarocks (if
-this module already ended up in the [main luarocks repository][11]) or
+this module already ended up in the [main luarocks repository][13]) or
 manually.
 
 Using luarocks, simply type:
@@ -407,10 +533,11 @@ Using luarocks, simply type:
     luarocks install annotate
 
 To install the module manually just drop `annotate.lua` and
-`annotate/check.lua` somewhere into your Lua `package.path`. You will
-also need [LPeg][9] (at least for the type checker).
+`annotate/*.lua` somewhere into your Lua `package.path`. You will
+also need [LPeg][9] (at least for the type checker, and the test
+module).
 
-  [11]: http://luarocks.org/repositories/rocks/    (Main Repository)
+  [13]: http://luarocks.org/repositories/rocks/    (Main Repository)
 
 
 ##                             Contact                              ##

@@ -108,5 +108,35 @@ seventh = annotate[=[
 ]=] ..
 function( a, ... ) end
 
+
+ func = annotate[=[
+This is function `func`.
+
+   func( n ) ==> number
+       n: number
+
+Examples:
+    > return func( 1 )
+    1
+    > function f( n )
+    >> return func( n )
+    >> end
+    > = f( 2 )
+    2
+    > = f( 2 ) -- this test will fail
+    3
+    > print( "hello\nworld" )
+    hello
+    world
+    > = 2+"x"
+    ...attempt to perform arithmetic...
+
+This is the end of the test code!
+]=] ..
+function( n )
+  return n
+end
+
+
 test( tonumber( os.getenv( "VERBOSE" ) ) )
 
