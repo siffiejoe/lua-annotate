@@ -525,6 +525,15 @@ The result is:
     ### TOTAL: 4 ok, 1 failed, 5 total
 
 
+##                             Changelog                            ##
+
+*   Version 0.2 [2013/05/08]
+    *    added plugin for simple interactive help
+    *    added plugin for running test code within annotations
+*   Version 0.1 [2013/04/21]
+    *    first public release
+
+
 ##                             Download                             ##
 
 The source code (with documentation and test scripts) is available on

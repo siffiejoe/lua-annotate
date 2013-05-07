@@ -60,7 +60,7 @@ do
   g.funcname = id * (P"." * id)^0 * (P":" * id)^-1 * _2
   g.arglist = (id+S"[],."+((ws+comment)-pbreak)^1)^0
   -- test specification
-  g.testspec = V"header" * Ct( (V"lua_line" + Ct( V"out_line"^1 ) + V"empty_line")^1 ) * ws^0
+  g.testspec = V"header" * Ct( V"lua_line" * (V"lua_line" + Ct( V"out_line"^1 ) + V"empty_line")^0 ) * ws^0
   g.header = (title*P":" + P"#"^1*(ws-P"\n")^0*title*(ws-P"\n")^0*P"#"^0) * V"empty_line"^0
   g.lua_line = indent * P">" * P">"^-1 * P" "^-1 * C( (P( 1 ) - P"\n")^0 ) * P"\n"
   g.out_line = indent * -P">" * C( (P( 1 ) - P"\n")^0 ) * P"\n"
