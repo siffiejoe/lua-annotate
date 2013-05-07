@@ -39,9 +39,9 @@ This is just another function.
 
 ###                       Function Prototype                       ###
 
-    another( a, b ) => boolean
+    another( a, b ) => number
         a: number
-        b: string
+        b: number
 
 ###                            Examples                            ###
 

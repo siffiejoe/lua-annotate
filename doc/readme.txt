@@ -391,7 +391,7 @@ signature. You can change that by providing a custom error function:
 ###                    The annotate.help Module                    ###
 
 The `annotate.help` module registers itself with the `annotate`
-module when require'd to provide interactive help for all functions
+module when require'd to provide interactive help for all Lua values
 with an annotation. It can also wrap other help modules (like e.g.
 [ihelp][10]) to delegate help requests for values *not* having a
 docstring.
@@ -406,6 +406,10 @@ or
     > help( someotherfunc )
 
   [10]:  https://github.com/dlaurie/lua-ihelp/
+
+If the argument to the `help` module is a string, `annotate.help`
+tries to require the string (and suitable substrings) looking for a
+Lua value with an annotation using the string as a path.
 
 
 ###                    The annotate.test Module                    ###
