@@ -6,7 +6,7 @@
 
 <p><img src="annotate.png" alt="annotate Logo" /></p>
 
-<h1>annotate -- Annotations and Docstrings for Lua Values</h1><div class="toc"><a href="#Introduction" title="Introduction">Introduction</a> · <a href="#Basic_Usage" title="Basic Usage">Basic Usage</a> · <a href="#Reference" title="Reference">Reference</a> · <a href="#Download" title="Download">Download</a> · <a href="#Installation" title="Installation">Installation</a> · <a href="#Contact" title="Contact">Contact</a> · <a href="#License" title="License">License</a></div>
+<h1>annotate -- Annotations and Docstrings for Lua Values</h1><div class="toc"><a href="#Introduction" title="Introduction">Introduction</a> · <a href="#Basic_Usage" title="Basic Usage">Basic Usage</a> · <a href="#Reference" title="Reference">Reference</a> · <a href="#Changelog" title="Changelog">Changelog</a> · <a href="#Download" title="Download">Download</a> · <a href="#Installation" title="Installation">Installation</a> · <a href="#Contact" title="Contact">Contact</a> · <a href="#License" title="License">License</a></div>
 
 <h2><a name="Introduction" id="Introduction"></a>Introduction</h2>
 
@@ -427,21 +427,24 @@ documentation stay correct.</p>
 or a markdown header (in atx-style format).</p>
 
 <ul><li><p>Simple Header:</p>
-    <ul><li>The word <code>example</code> or <code>examples</code> at the beginning of a
-        paragraph, optionally followed by a colon (<code>:</code>), and zero or
-        more empty lines (containing only whitespace). </li>
-        <li>The case of <code>example</code>/<code>examples</code> doesn't matter.</li>
+    <ul><li>The word <code>example</code> (<code>examples</code>) or <code>test</code> (<code>tests</code>) at the
+        beginning of a paragraph, optionally followed by a colon
+        (<code>:</code>), and zero or more empty lines (containing only
+        whitespace). </li>
+        <li>The case of <code>example</code>/<code>examples</code>/<code>test</code>/<code>tests</code> doesn't
+        matter.</li>
     </ul></li>
     <li><p>Markdown Header:</p>
     <ul><li>One or more <code>#</code> followed by optional whitespace, the word
-        <code>example</code> or <code>examples</code> (again case doesn't matter), and zero
-        or more empty lines (containing only whitespace).</li>
+        <code>example</code> (<code>examples</code>) or <code>test</code> (<code>tests</code>) (again case doesn't
+        matter), and zero or more empty lines (containing only
+        whitespace).</li>
         <li>The markdown header line can optionally be "closed" by
         whitespace and any number of <code>#</code>. </li>
     </ul></li>
 </ul><p>After the header, any line indented 4 spaces is either a line
 containing Lua code, or a line containing output of the Lua code
-before. Lua code starts with "<code>&gt; </code>" or "<code>&gt;&gt; </code>". Each line of Lua code
+before. Lua code starts with "<code>&gt;</code>" or "<code>&gt;&gt;</code>". Each line of Lua code
 is compiled as a separate chunk if possible (like in the interactive
 interpreter). All tests for a single annotation share a custom
 environment containing a modified <code>print</code> function, and the global
@@ -507,7 +510,16 @@ test() -- run the tests
 </code></pre>
 
 
-<h2><a name="Download" id="Download"></a>Download</h2>
+<h2><a name="Changelog" id="Changelog"></a>Changelog</h2>
+
+<ul><li>Version 0.2 [2013/05/08]
+    <ul><li>added plugin for simple interactive help</li>
+        <li>added plugin for running test code within annotations</li>
+    </ul></li>
+    <li>Version 0.1 [2013/04/21]
+    <ul><li>first public release</li>
+    </ul></li>
+</ul><h2><a name="Download" id="Download"></a>Download</h2>
 
 <p>The source code (with documentation and test scripts) is available on
 <a href="https://github.com/siffiejoe/lua-annotate/">github</a>.</p>
