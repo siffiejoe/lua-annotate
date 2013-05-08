@@ -21,6 +21,7 @@ local s_rep = assert( string.rep )
 local s_sub = assert( string.sub )
 local io_stderr = assert( io.stderr )
 local db_traceback = assert( debug.traceback )
+local db_getinfo = assert( debug.getinfo )
 local lpeg_match = assert( L.match )
 local loadstring = assert( loadstring or load )
 local unpack = assert( unpack or table.unpack )
@@ -122,11 +123,21 @@ end
 
 
 local function get_caption( v, sig )
-  if type( v ) == "function" and sig then
-    return "function " .. sig
-  else
-    return tostring( v )
+  if type( v ) == "function" then
+    if sig then
+      return "function " .. sig
+    else
+      local nfo = db_getinfo( v, "S" )
+      if nfo and nfo.short_src then
+        local line = "?"
+        if nfo.linedefined and nfo.linedefined > 0 then
+          line = nfo.linedefined
+        end
+        return tostring( v ) .. " ["..nfo.short_src..":"..line.."]"
+      end
+    end
   end
+  return tostring( v )
 end
 
 
