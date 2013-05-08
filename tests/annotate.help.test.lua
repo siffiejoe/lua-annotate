@@ -2,9 +2,17 @@
 
 package.path = [[../src/?.lua;]] .. package.path
 
+if _VERSION == "Lua 5.1" then
+  bit32 = {}
+end
+
 local annotate = require( "annotate" )
+local check = require( "annotate.check" )
+local test = require( "annotate.test" )
+check.enabled = false
 local help = require( "annotate.help" )
-require( "annotate.check" )
+check.enabled = true
+
 -- load https://github.com/dlaurie/lua-ihelp
 local ldoc_help
 pcall( function() ldoc_help = require( "help" ) end )
@@ -14,6 +22,7 @@ package.preload[ "a.b" ] = function()
   return { c = { d = annotate[=[help for a.b.c.d]=]..{} } }
 end
 
+local delim = ("-"):rep( 80 )
 
 example = annotate[=[
 An `annotate` docstring for the `example` function.
@@ -47,4 +56,17 @@ print( "###" )
 end
 
 print( pcall( example, "not a number" ) )
+
+print( delim )
+help( bit32 )
+print( delim )
+help( assert )
+print( delim )
+help( "table.concat" )
+print( delim )
+print( "searching for getfenv:" )
+help:search( "getfenv" )
+print( delim )
+
+test( tonumber( os.getenv( "VERBOSE" ) ) )
 
