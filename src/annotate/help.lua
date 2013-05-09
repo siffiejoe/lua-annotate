@@ -171,6 +171,34 @@ if check( _G, "pairs", 5.1 ) then
 ]=] .. _G.pairs
 end
 
+if check( _G, "unpack", V >= 5.1 and V < 5.2 ) then
+  _ = annotate[=[
+##                       The `unpack` Function                      ##
+
+    unpack( list [, i [, j]] ) ==> any*
+        list: table    -- an array
+        i   : integer  -- optional start index, defaults to 1
+        j   : integer  -- optional end index, defaults to #list
+
+The `unpack` function returns the elements of the array separately. An
+optional start as well as end index can be specified. The start index
+defaults to `1`, the end index to the length of the array as
+determined by the length operator `#`. The array may contain holes,
+but in this case explicit start and end indices must be given.
+
+###                            Examples                            ###
+
+    > =unpack( { 1, 2, 3, 4 } )
+    1       2       3       4
+    > =unpack( { 1, 2, 3, 4 }, 2 )
+    2       3       4
+    > =unpack( { 1, 2, 3 }, 2, 3 )
+    2       3
+    > =unpack( { 1, nil, nil, 4 }, 1, 4 )
+    1       nil     nil     4
+]=] .. _G.unpack
+end
+
 ----------------------------------------------------------------------
 -- bit32 library
 
@@ -688,7 +716,8 @@ string which is returned. An optional separator is inserted between
 every element pair. Optional start and end indices allow for selecting
 a sub-range of the array. If an element is encountered that is neither
 number nor string, an error is raised. An empty array (or sub-range)
-results in the empty string `""`.
+results in the empty string `""`. All table accesses do not trigger
+metamethods.
 
 ###                            Examples                            ###
 
@@ -702,6 +731,167 @@ results in the empty string `""`.
     > =table.concat( t, "|", 2, 4 )
     2|3|4
 ]=] .. table.concat
+end
+
+if check( table, "insert", 5.1 ) then
+  _ = annotate[=[
+##                    The `table.insert` Function                   ##
+
+    table.insert( list, [pos,] value )
+        list : table    -- an array
+        pos  : integer  -- index where to insert, defaults to #list+1
+        value: any      -- value to insert
+
+The `table.insert` function inserts a value at the given position into
+an array, shifting all following array elements by one. If no position
+is given (the function is called with two arguments), the value is
+appended to the end of the array. All table accesses do not trigger
+metamethods. The array must *not* contain holes!
+
+###                            Examples                            ###
+
+    > t = { 1, 2, 3 }
+    > table.insert( t, 4 )
+    > =t[ 1 ], t[ 2 ], t[ 3 ], t[ 4 ]
+    1       2       3       4
+    > table.insert( t, 2, 1.5 )
+    > =t[ 1 ], t[ 2 ], t[ 3 ], t[ 4 ], t[ 5 ]
+    1       1.5     2       3       4
+]=] .. table.insert
+end
+
+if check( table, "maxn", V >= 5.1 and V < 5.2 ) then
+  _ = annotate[=[
+##                     The `table.maxn` Function                    ##
+
+    table.maxn( table ) ==> number
+
+The `table.maxn` function traverses the whole table to look for the
+largest positive numeric key and returns it. If no such key is found,
+`0` is returned. The table may contain holes and non-integer numeric
+keys. If it doesn't, this function is equivalent to applying the
+length operator (`#`) on the table.
+
+###                            Examples                            ###
+
+    > t = { 1, 2, 3, 4 }
+    > =#t, table.maxn( t )
+    4       4
+    > =table.maxn( { 1, 2, 3, [ 10 ]=10, [ 12.5 ]=12.5 } )
+    12.5
+    > =table.maxn( { a=1 } )
+    0
+]=] .. table.maxn
+end
+
+if check( table, "pack", 5.2 ) then
+  _ = annotate[=[
+##                     The `table.pack` Function                    ##
+
+    table.pack( ... ) ==> table
+
+The `table.pack` function collects all its arguments in an array and
+returns it. The `n` field of the returned table is set to the number
+of vararg/array elements (including `nil`s). Since varargs can contain
+`nil`s, the resulting table might contain holes and thus not be a
+proper array.
+
+###                            Examples                            ###
+
+    > t = table.pack( 1, 2, 3 )
+    > =t[ 1 ], t[ 2 ], t[ 3 ], t.n
+    1       2       3       3
+    > t = table.pack( "a", "b", nil, "d" )
+    > =t[ 1 ], t[ 2 ], t[ 3 ], t[ 4 ], t.n
+    a       b       nil     d       4
+
+]=] .. table.pack
+end
+
+if check( table, "remove", 5.1 ) then
+  _ = annotate[=[
+##                    The `table.remove` Function                   ##
+
+    table.remove( list [, pos] ) ==> any
+        list: table    -- an array
+        pos : integer  -- index of value to remove, defaults to #list
+
+The `table.remove` function removes the value at the given position
+from the array and returns it. The following array elements are
+shifted by one to close the gap. If no position is given, the last
+array element is removed. All table accesses do not trigger
+metamethods. The array must *not* contain holes!
+
+###                            Examples                            ###
+
+    > t = { 1, 2, 3, 4, 5 }
+    > =table.remove( t )
+    5
+    > =t[ 1 ], t[ 2 ], t[ 3 ], t[ 4 ], t[ 5 ]
+    1       2       3       4       nil
+    > =table.remove( t, 2 )
+    2
+    > =t[ 1 ], t[ 2 ], t[ 3 ], t[ 4 ]
+    1       3       4       nil
+]=] .. table.remove
+end
+
+if check( table, "sort", 5.1 ) then
+  _ = annotate[=[
+##                     The `table.sort` Function                    ##
+
+    table.sort( list [, comp] )
+        list: table     -- an array
+        comp: function  -- comparator function, defaults to <
+
+The `table.sort` function sorts the elements of an array in-place
+using a comparator function to determine the intended order of the
+elements. The comparator function takes two array elements as
+arguments and should return a true value if the first array element
+should end up *before* the second in the sorted array. If no
+comparator function is given, Lua's `<`-operator is used. All table
+accesses do not trigger metamethods, and the array must *not* contain
+holes! The sort algorithm is not stable.
+
+###                            Examples                            ###
+
+    > t = { 3, 2, 5, 1, 2, 4 }
+    > table.sort( t )
+    > =t[ 1 ], t[ 2 ], t[ 3 ], t[ 4 ], t[ 5 ], t[ 6 ]
+    1       2       2       3       4       5
+    > t = { 3, 2, 5, 1, 2, 4 }
+    > table.sort( t, function( a, b ) return a > b end )
+    > =t[ 1 ], t[ 2 ], t[ 3 ], t[ 4 ], t[ 5 ], t[ 6 ]
+    5       4       3       2       2       1
+]=] .. table.sort
+end
+
+if check( table, "unpack", 5.2 ) then
+  _ = annotate[=[
+##                    The `table.unpack` Function                   ##
+
+    table.unpack( list [, i [, j]] ) ==> any*
+        list: table    -- an array
+        i   : integer  -- optional start index, defaults to 1
+        j   : integer  -- optional end index, defaults to #list
+
+The `table.unpack` function returns the elements of the array
+separately. An optional start as well as end index can be specified.
+The start index defaults to `1`, the end index to the length of the
+array as determined by the length operator `#`. The array may contain
+holes, but in this case explicit start and end indices must be given.
+
+###                            Examples                            ###
+
+    > =table.unpack( { 1, 2, 3, 4 } )
+    1       2       3       4
+    > =table.unpack( { 1, 2, 3, 4 }, 2 )
+    2       3       4
+    > =table.unpack( { 1, 2, 3 }, 2, 3 )
+    2       3
+    > =table.unpack( { 1, nil, nil, 4 }, 1, 4 )
+    1       nil     nil     4
+]=] .. table.unpack
 end
 
 ----------------------------------------------------------------------

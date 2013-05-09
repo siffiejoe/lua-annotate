@@ -394,22 +394,43 @@ The `annotate.help` module registers itself with the `annotate`
 module when require'd to provide interactive help for all Lua values
 with an annotation. It can also wrap other help modules (like e.g.
 [ihelp][10]) to delegate help requests for values *not* having a
-docstring.
+docstring. Assuming `help` is the return value of the `require`-call:
 
-    > help = require( "annotate.help" )
-    > help( somefunc )
-    output of somefunc's docstring ...
+*   `help( value )`
 
-or
+    Prints the annotation for the given value, or a short notice that
+    no docstring could be found for that value.
 
-    > help = require( "annotate.help" ):wrap( help_func )
-    > help( someotherfunc )
+*   `help:search( pattern [, highlighter] )` or
+    `help.search( pattern [, highlighter] )`
+
+    Prints all annotations that match the given pattern, or a short
+    notice that no matching docstring could be found. If `highlighter`
+    is a function value, it is used in a `string.gsub` call to replace
+    all occurrences of the pattern with a highlighted value.
+
+*   `help:wrap( help_func )` or `help.wrap( help_func )`
+
+    Returns a function that first looks for an annotation for a given
+    value and prints it if it exists, or falls back to the supplied
+    `help_func` function.
+
+*   `help:lookup( value )` or `help.lookup( value )`
+
+    Tries to find a docstring for the given value and returns it.
+    Returns `nil` if no docstring can be found.
+
+*   `help.ansi_highlight`
+
+    A highlighter function for `search` using ANSI escape sequences
+    for colorized output.
 
   [10]:  https://github.com/dlaurie/lua-ihelp/
 
-If the argument to the `help` module is a string, `annotate.help`
-tries to require the string (and suitable substrings) looking for a
-Lua value with an annotation using the string as a path.
+If the argument to the `help` module (or to the `lookup` function) is
+a string, `annotate.help` tries to require the string (and suitable
+substrings) looking for a Lua value with an annotation using the
+string as a path.
 
 
 ###                    The annotate.test Module                    ###
@@ -531,7 +552,7 @@ The result is:
 
 ##                             Changelog                            ##
 
-*   Version 0.2 [2013/05/08]
+*   Version 0.2 [2013/05/xx]
     *    added plugin for simple interactive help
     *    added plugin for running test code within annotations
 *   Version 0.1 [2013/04/21]
