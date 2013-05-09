@@ -615,25 +615,161 @@ following fields:
 ]=] .. package
 end
 
-if check( package, "loadlib", 5.1 ) then
+if check( package, "loaded", 5.1 ) then
+  _ = annotate[=[
+##                    The `package.loaded` Table                    ##
+
+The `require` function caches every module it loads (or rather the
+module's return value) in a table in the registry that is also
+referenced by `package.loaded` to avoiding loading/running a module
+more than once. Setting `package.loaded` to a new table has no effect
+on `require`s behavior, since the cache table in the registry is
+unchanged. `require` *will* return a module that you put there
+manually, though.
+
+###                            Examples                            ###
+
+    > =package.loaded[ "annotate.help" ]
+    table: ...
+    > package.loaded[ "my.special.module" ] = "hello"
+    > =require( "my.special.module" )
+    hello
+]=] .. package.loaded
+end
+
+if check( package, "loaders", V >= 5.1 and V < 5.2 ) then
+  _ = annotate[=[
+##                    The `package.loaders` Table                   ##
+
+`package.loaders` is a reference to an internal array of functions
+that are used by `require` to find modules by a given name. The
+default loaders in this table look for a field in `package.preload`
+first, then try to find a Lua library via `package.path`/`LUA_PATH`,
+and then resort to loading dynamic C libraries via `package.loadlib`
+and `package.cpath`/`LUA_CPATH`. As it is just an alias, setting
+`package.loaders` to a new table has no effect on module loading.
+]=] .. package.loaders
+end
+
+if check( package, "loadlib", V >= 5.1 and V < 5.2 ) then
   _ = annotate[=[
 ##                  The `package.loadlib` Function                  ##
 
+    package.loadlib( libname, funcname ) ==> function    -- on success
+                                         ==> nil, string -- on error
+        libname : string  -- name of a DLL or shared object
+        funcname: string  -- name of a lua_CFunction in the C library
+
+The `package.loadlib` function loads and links the dynamic C library
+with the given name and looks for the given function symbol in the
+library. On success, the symbol is returned as a function, otherwise
+nil and an error message is returned.
 ]=] .. package.loadlib
 end
 
-if check( package, "seeall", 5.1 ) then
+if check( package, "loadlib", 5.2 ) then
   _ = annotate[=[
-##                   The `package.seeall` Function                  ##
+##                  The `package.loadlib` Function                  ##
 
-]=] .. package.seeall
+    package.loadlib( libname, funcname ) ==> function    -- on success
+                                         ==> nil, string -- on error
+        libname : string  -- name of a DLL or shared object
+        funcname: string  -- name of a lua_CFunction in the C library
+
+The `package.loadlib` function loads and links the dynamic C library
+with the given name and looks for the given function symbol in the
+library. On success, the symbol is returned as a function, otherwise
+nil and an error message is returned. `funcname` may be `"*"` in which
+case the library is linked and can serve as a prerequisite for other
+dynamic C libraries, but no function is returned.
+]=] .. package.loadlib
+end
+
+if check( package, "preload", 5.1 ) then
+  _ = annotate[=[
+##                    The `package.preload` Table                   ##
+
+The `package.preload` table is a table (or rather an alias for a table
+in the registry) the `require` function by default looks in before
+attempting to load a module from a file. The table maps module names
+to loader functions, that are called by `require` to load a module.
+As it is just an alias, setting `package.preload` to a new table has
+no effect on module loading.
+
+###                            Examples                            ###
+
+    >package.preload[ "my.special.mod" ] = function( name )
+    >>   print( name )
+    >>   return "hello again"
+    >> end
+    > =require( "my.special.mod" )
+    my.special.mod
+    hello again
+    > =require( "my.special.mod" )
+    hello again
+]=] .. package.preload
+end
+
+if check( package, "searchers", 5.2 ) then
+  _ = annotate[=[
+##                   The `package.searchers` Table                  ##
+
+`package.searchers` is a reference to an internal array of functions
+that are used by `require` to find modules by a given name. The
+default searchers in this table look for a field in `package.preload`
+first, then try to find a Lua library via `package.path`/`LUA_PATH`,
+and then resort to loading dynamic C libraries via `package.loadlib`
+and `package.cpath`/`LUA_CPATH`. As it is just an alias, setting
+`package.searchers` to a new table has no effect on module loading.
+]=] .. package.searchers
 end
 
 if check( package, "searchpath", 5.2 ) then
   _ = annotate[=[
 ##                 The `package.searchpath` Function                ##
 
+    package.searchpath( name, path [, sep [, rep]] )
+            ==> string
+            ==> nil, string
+        name: string  -- name to look for
+        path: string  -- path template used for searching
+        sep : string  -- sub-string in name to replace, "." by default
+        rep : string  -- replacement for any sep occurrences in name,
+                      -- the platform's directory separator by default
+
+The `package.searchpath` function iterates the `;`-separated elements
+in the `path` template, after substituting each `?` in the template
+with a modified `name` where each occurrence of `sep` in `name` is
+replaced by `rep`. Returns the first file that can be opened for
+reading, or nil and a message listing all file paths tried. The
+default value for `sep` is `"."`, the default for `rep` is the Lua
+directory separator listed in `package.config` (and defined in
+`luaconf.h`).
+
+###                            Examples                            ###
+
+    > =package.searchpath( "my.weird.f_name", "./?.x;?.t", nil, "/" )
+    nil
+            no file './my/weird/f_name.x'
+            no file 'my/weird/f_name.t'
+    > =package.searchpath( "my.weird.f_name", "?.t_t", "_", "X" )
+    nil
+            no file 'my.weird.fXname.t_t'
 ]=] .. package.searchpath
+end
+
+if check( package, "seeall", V >= 5.1 and V < 5.2 ) then
+  _ = annotate[=[
+##                   The `package.seeall` Function                  ##
+
+    package.seeall( module )
+        module: table  -- the module table
+
+The `package.seeall` function usually is not called directly, but
+passed as the second argument to the `module` function to make the
+global environment available inside the module's code by setting a
+metatable with an `__index` metamethod for the module table.
+]=] .. package.seeall
 end
 
 ----------------------------------------------------------------------
