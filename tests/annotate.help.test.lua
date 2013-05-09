@@ -22,7 +22,7 @@ package.preload[ "a.b" ] = function()
   return { c = { d = annotate[=[help for a.b.c.d]=]..{} } }
 end
 
-local delim = ("-"):rep( 80 )
+local delim = ("="):rep( 70 )
 
 example = annotate[=[
 An `annotate` docstring for the `example` function.
@@ -65,7 +65,7 @@ print( delim )
 help( "table.concat" )
 print( delim )
 print( "searching for getfenv:" )
-help:search( "getfenv" )
+help:search( "getfenv", help.ansi_highlight )
 print( delim )
 
 test( tonumber( os.getenv( "VERBOSE" ) ) )

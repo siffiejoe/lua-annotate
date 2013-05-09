@@ -25,8 +25,9 @@ local docstring_cache = {}
 setmetatable( docstring_cache, { __mode="k" } )
 
 local function docstring_callback( v, docstring )
-  docstring_cache[ v ] = s_gsub( docstring, "^%s*(.-)%s*$", "%1" )
+  docstring_cache[ v ] = docstring
 end
+
 annotate:register( docstring_callback )
 
 ----------------------------------------------------------------------
@@ -39,7 +40,7 @@ local function check( t, name, cond )
   return cond and type( t ) == "table" and t[ name ] ~= nil
 end
 
-local _ -- dummy variable
+local _ -- dummy variable used later (a lot)
 
 ----------------------------------------------------------------------
 -- base library
@@ -48,7 +49,7 @@ if check( _G, "_G", V >= 5.1 and V < 5.2 ) then
   _ = annotate[=[
 ##                         Lua Base Library                         ##
 
-The Lua standard base library defines the following global functions:
+Lua's base library defines the following global functions:
 
 *   `assert` -- Raise an error if a condition is false.
 *   `collectgarbage` -- Control the Lua garbage collector.
@@ -75,17 +76,25 @@ The Lua standard base library defines the following global functions:
 *   `tonumber` -- Convert a string to a Lua number.
 *   `tostring` -- Convert any Lua value to a string.
 *   `type` -- Query the type of a Lua value.
-*   `unpack` -- Converts an array to multiple values (vararg).
-*   `xpcall` -- Like `pcall`, but providing stack traces for errors.
+*   `unpack` -- Convert an array to multiple values (vararg).
+*   `xpcall` -- Like `pcall`, but provide stack traces for errors.
 
+Typically, the following libraries/tables are available:
+
+*   `coroutine` -- Suspend/pause Lua code and resume it later.
+*   `debug` -- Access debug information for Lua code.
+*   `io` -- Input/output functions for files.
+*   `math` -- Mathematical functions from C's standard library.
+*   `os` -- Minimal interface to OS services.
+*   `package` -- Settings/Functions for Loading Lua/C modules.
+*   `string` -- Functions for manipulating strings.
+*   `table` -- Functions for manipulating arrays.
 ]=] .. _G
-end
-
-if check( _G, "_G", 5.2 ) then
+elseif check( _G, "_G", 5.2 ) then
   _ = annotate[=[
 ##                         Lua Base Library                         ##
 
-The Lua standard base library defines the following global functions:
+Lua's base library defines the following global functions:
 
 *   `assert` -- Raise an error if a condition is false.
 *   `collectgarbage` -- Control the Lua garbage collector.
@@ -109,8 +118,19 @@ The Lua standard base library defines the following global functions:
 *   `tonumber` -- Convert a string to a Lua number.
 *   `tostring` -- Convert any Lua value to a string.
 *   `type` -- Query the type of a Lua value.
-*   `xpcall` -- Like `pcall`, but providing stack traces for errors.
+*   `xpcall` -- Like `pcall`, but provide stack traces for errors.
 
+Typically, the following libraries/tables are available:
+
+*   `bit32` -- Bit manipulation for 32bit unsigned integers.
+*   `coroutine` -- Suspend/pause Lua code and resume it later.
+*   `debug` -- Access debug information for Lua code.
+*   `io` -- Input/output functions for files.
+*   `math` -- Mathematical functions from C's standard library.
+*   `os` -- Minimal interface to OS services.
+*   `package` -- Settings/Functions for Loading Lua/C modules.
+*   `string` -- Functions for manipulating strings.
+*   `table` -- Functions for manipulating arrays.
 ]=] .. _G
 end
 
@@ -119,9 +139,8 @@ if check( _G, "assert", 5.1 ) then
 ##                       The `assert` Function                      ##
 
     assert( cond, ... ) ==> any*
-      cond: any       -- evaluated as a condition
-      ... : any*      -- additional arguments (first may serve as
-                      -- error message)
+        cond: any     -- evaluated as a condition
+        ... : any*    -- additional arguments
 
 If `assert`'s first argument evaluates to a true value (anything but
 `nil` or `false`), `assert` passes all arguments as return values. If
@@ -142,12 +161,12 @@ argument, a generic error message is used.
     stdin:1: assertion failed!
     stack traceback:
             ...
-
 ]=] .. _G.assert
 end
 
 if check( _G, "pairs", 5.1 ) then
   _ = annotate[=[
+##                       The `pairs` Function                       ##
 
 ]=] .. _G.pairs
 end
@@ -159,11 +178,26 @@ if check( _G, "bit32", 5.2 ) then
   _ = annotate[=[
 ##                        Bitwise Operations                        ##
 
+The following functions are provided by Lua's `bit32` library:
+
+*   `bit32.arshift` -- Arithmetic bit-shift to the right.
+*   `bit32.band` -- Perform bitwise and operation.
+*   `bit32.bnot` -- Perform bitwise not operation.
+*   `bit32.bor` -- Perform bitwise or operation.
+*   `bit32.btest` -- Test if all arguments have a 1-bit in common.
+*   `bit32.bxor` -- Perform bitwise exclusive or operation.
+*   `bit32.extract` -- Extract a sub-range of bits.
+*   `bit32.lrotate` -- Left bit-shift (bits re-enter on the right).
+*   `bit32.lshift` -- Bit-shift to the left.
+*   `bit32.replace` -- Replace a sub-range of bits.
+*   `bit32.rrotate` -- Right bit-shift (bits re-enter on the left).
+*   `bit32.rshift` -- Normal bit-shift to the right.
 ]=] .. bit32
 end
 
 if check( bit32, "arshift", 5.2 ) then
   _ = annotate[=[
+##                   The `bit32.arshift` Function                   ##
 
 ]=] .. bit32.arshift
 end
@@ -175,11 +209,21 @@ if check( _G, "coroutine", 5.1 ) then
   _ = annotate[=[
 ##                      Coroutine Manipulation                      ##
 
+The `coroutine` table, which is part of Lua's base library, contains
+the following functions:
+
+*   `coroutine.create` -- Create new coroutines.
+*   `coroutine.resume` -- Resume coroutine where it last `yield`ed.
+*   `coroutine.running` -- Get currently running coroutine.
+*   `coroutine.status` -- Query status of a coroutine value.
+*   `coroutine.wrap` -- Create coroutines, disguise them as functions.
+*   `coroutine.yield` -- Suspend execution of current coroutine.
 ]=] .. coroutine
 end
 
 if check( coroutine, "create", 5.1 ) then
   _ = annotate[=[
+##                  The `coroutine.create` Function                 ##
 
 ]=] .. coroutine.create
 end
@@ -187,15 +231,55 @@ end
 ----------------------------------------------------------------------
 -- debug library
 
-if check( _G, "debug", 5.1 ) then
+if check( _G, "debug", V >= 5.1 and V < 5.2 ) then
   _ = annotate[=[
 ##                         The Debug Library                        ##
 
+Lua's `debug` library provides the following functions:
+
+*   `debug.debug` -- Start a simple interactive prompt for debugging.
+*   `debug.getfenv` -- Get environment for function or userdata.
+*   `debug.gethook` -- Get current hook settings of a thread.
+*   `debug.getinfo` -- Get general information about a function.
+*   `debug.getlocal` -- Get name and value of a local variable.
+*   `debug.getmetatable` -- Get metatable for any Lua object.
+*   `debug.getregistry` -- Get reference to the Lua registry.
+*   `debug.getupvalue` -- Get name and value of a function's upvalue.
+*   `debug.setfenv` -- Set environment for function or userdata.
+*   `debug.sethook` -- Register hook function for Lua code.
+*   `debug.setlocal` -- Set the value of a local variable.
+*   `debug.setmetatable` -- Set metatable on any Lua object.
+*   `debug.setupvalue` -- Set the value of an upvalue for a function.
+*   `debug.traceback` -- Traceback generator for `xpcall`
+]=] .. debug
+elseif check( _G, "debug", 5.2 ) then
+  _ = annotate[=[
+##                         The Debug Library                        ##
+
+Lua's `debug` library provides the following functions:
+
+*   `debug.debug` -- Start a simple interactive prompt for debugging.
+*   `debug.getuservalue` -- Get the value associated with a userdata.
+*   `debug.gethook` -- Get current hook settings of a thread.
+*   `debug.getinfo` -- Get general information about a function.
+*   `debug.getlocal` -- Get name and value of a local variable.
+*   `debug.getmetatable` -- Get metatable for any Lua object.
+*   `debug.getregistry` -- Get reference to the Lua registry.
+*   `debug.getupvalue` -- Get name and value of a function's upvalue.
+*   `debug.setuservalue` -- Associate a value with a userdata.
+*   `debug.sethook` -- Register hook function for Lua code.
+*   `debug.setlocal` -- Set the value of a local variable.
+*   `debug.setmetatable` -- Set metatable on any Lua object.
+*   `debug.setupvalue` -- Set the value of an upvalue for a function.
+*   `debug.traceback` -- Traceback generator for `xpcall`
+*   `debug.upvalueid` -- Uniquely identify an upvalue.
+*   `debug.upvaluejoin` -- Make upvalue of function refer to another.
 ]=] .. debug
 end
 
 if check( debug, "debug", 5.1 ) then
   _ = annotate[=[
+##                    The `debug.debug` Function                    ##
 
 ]=] .. debug.debug
 end
@@ -207,27 +291,231 @@ if check( _G, "io", 5.1 ) then
   _ = annotate[=[
 ##                    Input and Output Facilities                   ##
 
+Lua's `io` library contains the following fields/functions:
+
+*   `io.close` -- Close a file or the default output stream.
+*   `io.flush` -- Flush buffers for the default output stream.
+*   `io.input` -- Get/Set the default input stream.
+*   `io.lines` -- Iterate over the lines of the given file.
+*   `io.open` -- Open a file for reading and/or writing.
+*   `io.output` -- Get/set the default output stream.
+*   `io.popen` -- Run program, read its output or write to its input.
+*   `io.read` -- Read from the default input stream.
+*   `io.stderr` -- File object for the standard error stream.
+*   `io.stdin` -- File object for the standard input stream.
+*   `io.stdout` -- File object for the standard output stream.
+*   `io.tmpfile` -- Get a handle for a temporary file.
+*   `io.type` -- Check if a value is a file object.
+*   `io.write` -- Write to the default output stream.
+
+Lua file handles have the following methods:
+
+*   `file:close` -- Close the file object.
+*   `file:flush` -- Flush output buffers for the file object.
+*   `file:lines` -- Iterate over the lines of the given file object.
+*   `file:read` -- Read bytes/lines from the file object
+*   `file:seek` -- Set/get the file position where to read/write.
+*   `file:setvbuf` -- Set buffering mode for an output file object.
+*   `file:write` -- Write strings (or numbers) to a file object.
 ]=] .. io
 end
 
-if check( io, "close", 5.1 ) then
+if check( io, "close", V >= 5.1 and V < 5.2 ) then
   _ = annotate[=[
+##                      The `io.close` Function                     ##
 
 ]=] .. io.close
+end
+
+if check( io, "close", 5.2 ) then
+  _ = annotate[=[
+##                      The `io.close` Function                     ##
+
+]=] .. io.close
+end
+
+if check( io, "flush", 5.1 ) then
+  _ = annotate[=[
+##                      The `io.flush` Function                     ##
+
+]=] .. io.flush
+end
+
+if check( io, "stderr", 5.1 ) then
+  _ = annotate[=[
+##                    The `io.stderr` File Object                   ##
+
+The `io.stderr` file object represents the `stderr` file stream of C
+programs and is intended for error messages. Typically it is connected
+to a console/terminal.
+
+It supports the following methods:
+
+*   `file:close` -- Close the file object.
+*   `file:flush` -- Flush output buffers for the file object.
+*   (`file:seek` -- Set/get the file position where to read/write.)
+*   `file:setvbuf` -- Set buffering mode for an output file object.
+*   `file:write` -- Write strings (or numbers) to a file object.
+
+(The methods for input are available too, but make no sense for an
+output file object.)
+]=] .. io.stderr
+end
+
+if check( io, "stdin", 5.1 ) then
+  _ = annotate[=[
+##                    The `io.stdin` File Object                   ##
+
+The `io.stdin` file object represents the `stdin` file stream of C
+programs and is intended for user input. Typically it is connected to
+a console/terminal.
+
+It supports the following methods:
+
+*   `file:close` -- Close the file object.
+*   `file:lines` -- Iterate over the lines of the given file object.
+*   `file:read` -- Read bytes/lines from the file object
+*   (`file:seek` -- Set/get the file position where to read/write.)
+
+(The methods for output are available too, but make no sense for an
+input file object.)
+]=] .. io.stdin
+end
+
+if check( io, "stdout", 5.1 ) then
+  _ = annotate[=[
+##                    The `io.stdout` File Object                   ##
+
+The `io.stdout` file object represents the `stdout` file stream of C
+programs and is intended for normal program output. By default it is
+connected to a console/terminal.
+
+It supports the following methods:
+
+*   `file:close` -- Close the file object.
+*   `file:flush` -- Flush output buffers for the file object.
+*   (`file:seek` -- Set/get the file position where to read/write.)
+*   `file:setvbuf` -- Set buffering mode for an output file object.
+*   `file:write` -- Write strings (or numbers) to a file object.
+
+(The methods for input are available too, but make no sense for an
+output file object.)
+]=] .. io.stdout
+end
+
+-- get access to file methods
+local file
+if type( debug ) == "table" and type( io ) == "table" then
+  local getmeta = debug.getmetatable
+  local handle = io.stdout or io.stderr or io.stdin
+  if type( getmeta ) == "function" and
+     type( handle ) == "userdata" then
+    local m = getmeta( handle )
+    if m and type( m.__index ) == "table" then
+      file = m.__index
+    end
+  end
+end
+
+if check( file, "close", 5.1 ) then
+  if io.close ~= file.close then
+    _ = annotate[=[
+##                     The `file:close()` Method                    ##
+
+]=] .. file.close
+  end
+end
+
+if check( file, "flush", 5.1 ) then
+  if io.flush ~= file.flush then
+    _ = annotate[=[
+##                     The `file:flush()` Method                    ##
+
+]=] .. file.flush
+  end
 end
 
 ----------------------------------------------------------------------
 -- math library
 
-if check( _G, "math", 5.1 ) then
+if check( _G, "math", V >= 5.1 and V < 5.2 ) then
   _ = annotate[=[
 ##                      Mathematical Functions                      ##
 
+The following functions/values are available in Lua's `math` library:
+
+*   `math.abs` -- Get positive value of a number.
+*   `math.acos` -- Get arc cosine of a number (in radians).
+*   `math.asin` -- Get arc sine of a number (in radians).
+*   `math.atan` -- Get arc tangent of a number (in radians).
+*   `math.atan2` -- Get arc tangent of y/x.
+*   `math.ceil` -- Get nearest integer `>=` a number.
+*   `math.cos` -- Get cosine of a number (in radians).
+*   `math.cosh` -- Get hyperbolic cosine of a number (in radians).
+*   `math.deg` -- Convert an angle from radians to degrees.
+*   `math.exp` -- Calculate `e^x`.
+*   `math.floor` -- Get nearest integer `<=´ a number.
+*   `math.fmod` -- Calculate remainder of a division.
+*   `math.frexp` -- Get significand and exponent of a Lua number.
+*   `math.huge` -- Largest representable number (typically infinity).
+*   `math.ldexp` -- Generate Lua number from significand and exponent.
+*   `math.log` -- Calculate natural logarithm of a number.
+*   `math.log10` -- Calculate base-10 logarithm of a number.
+*   `math.max` -- Find maximum of a given set of numbers.
+*   `math.min` -- Find minimum of a given set of numbers.
+*   `math.modf` -- Get integral and fractional part of a Lua number.
+*   `math.pi` -- The number PI.
+*   `math.pow` -- Calculate `x^y`.
+*   `math.rad` -- Convert an angle from degrees to radians.
+*   `math.random` -- Generate pseudo-random number.
+*   `math.randomseed` -- Initialize pseudo-random number generator.
+*   `math.sin` -- Get sine of a number (in radians).
+*   `math.sinh` -- Get hyperbolic sine of a number (in radians).
+*   `math.sqrt` -- Calculate the square root of a number.
+*   `math.tan` -- Get tangent of a number (in radians)
+*   `math.tanh` -- Get hyperbolic tangent of a number (in radians).
+]=] .. math
+elseif check( _G, "math", 5.2 ) then
+  _ = annotate[=[
+##                      Mathematical Functions                      ##
+
+The following functions are available in Lua's `math` library:
+
+*   `math.abs` -- Get positive value of a number.
+*   `math.acos` -- Get arc cosine of a number (in radians).
+*   `math.asin` -- Get arc sine of a number (in radians).
+*   `math.atan` -- Get arc tangent of a number (in radians).
+*   `math.atan2` -- Get arc tangent of y/x.
+*   `math.ceil` -- Get nearest integer `>=` a number.
+*   `math.cos` -- Get cosine of a number (in radians).
+*   `math.cosh` -- Get hyperbolic cosine of a number (in radians).
+*   `math.deg` -- Convert an angle from radians to degrees.
+*   `math.exp` -- Calculate `e^x`.
+*   `math.floor` -- Get nearest integer `<=´ a number.
+*   `math.fmod` -- Calculate remainder of a division.
+*   `math.frexp` -- Get significand and exponent of a Lua number.
+*   `math.huge` -- Largest representable number (typically infinity).
+*   `math.ldexp` -- Generate Lua number from significand and exponent.
+*   `math.log` -- Calculate logarithm of a number for a given base.
+*   `math.max` -- Find maximum of a given set of numbers.
+*   `math.min` -- Find minimum of a given set of numbers.
+*   `math.modf` -- Get integral and fractional part of a Lua number.
+*   `math.pi` -- The number PI.
+*   `math.pow` -- Calculate `x^y`.
+*   `math.rad` -- Convert an angle from degrees to radians.
+*   `math.random` -- Generate pseudo-random number.
+*   `math.randomseed` -- Initialize pseudo-random number generator.
+*   `math.sin` -- Get sine of a number (in radians).
+*   `math.sinh` -- Get hyperbolic sine of a number (in radians).
+*   `math.sqrt` -- Calculate the square root of a number.
+*   `math.tan` -- Get tangent of a number (in radians)
+*   `math.tanh` -- Get hyperbolic tangent of a number (in radians).
 ]=] .. math
 end
 
 if check( math, "abs", 5.1 ) then
   _ = annotate[=[
+##                      The `math.abs` Function                     ##
 
 ]=] .. math.abs
 end
@@ -239,11 +527,25 @@ if check( _G, "os", 5.1 ) then
   _ = annotate[=[
 ##                    Operating System Facilities                   ##
 
+Lua defines the following functions in its `os` library:
+
+*   `os.clock` -- Calculate CPU time in seconds used by program.
+*   `os.date` -- Formatting of dates/times.
+*   `os.difftime` -- Calculate difference between two time values.
+*   `os.execute` -- Run external programs using the OS's shell.
+*   `os.exit` -- Quit currently running program.
+*   `os.getenv` -- Query environment variables.
+*   `os.remove` -- Remove a file in the file system.
+*   `os.rename` -- Move/Rename a file in the file system.
+*   `os.setlocale` -- Adapt runtime to different languages.
+*   `os.time` -- Get a time value for a given date (or for now).
+*   `os.tmpname` -- Get a file name usable as a temporary file.
 ]=] .. os
 end
 
 if check( os, "clock", 5.1 ) then
   _ = annotate[=[
+##                      The `os.clock` Function                     ##
 
 ]=] .. os.clock
 end
@@ -251,17 +553,59 @@ end
 ----------------------------------------------------------------------
 -- package table
 
-if check( _G, "package", 5.1 ) then
+if check( _G, "package", V >= 5.1 and V < 5.2 ) then
   _ = annotate[=[
 ##                         The Package Table                        ##
 
+The `package` table, which is part of Lua's base library, contains the
+following fields:
+
+*   `package.config` -- Some settings from `luaconf.h`.
+*   `package.cpath` -- Path template to look for C modules.
+*   `package.loaded` -- Cache for already loaded modules.
+*   `package.loaders` -- Functions used for finding/loading modules.
+*   `package.loadlib` -- Function for loading shared libraries.
+*   `package.path` -- Path template to look for Lua modules.
+*   `package.preload` -- Table of loader functions for modules.
+*   `package.seeall` -- Import global environment for modules.
+]=] .. package
+elseif check( _G, "package", 5.2 ) then
+  _ = annotate[=[
+##                         The Package Table                        ##
+
+The `package` table, which is part of Lua's base library, contains the
+following fields:
+
+*   `package.config` -- Some settings from `luaconf.h`.
+*   `package.cpath` -- Path template to look for C modules.
+*   `package.loaded` -- Cache for already loaded modules.
+*   `package.loadlib` -- Function for loading shared libraries.
+*   `package.path` -- Path template to look for Lua modules.
+*   `package.preload` -- Table of loader functions for modules.
+*   `package.searchers` -- Functions used for finding/loading modules.
+*   `package.searchpath` -- Search for a name using a path template.
 ]=] .. package
 end
 
-if check( package, "config", 5.1 ) then
+if check( package, "loadlib", 5.1 ) then
   _ = annotate[=[
+##                  The `package.loadlib` Function                  ##
 
-]=] .. package.config
+]=] .. package.loadlib
+end
+
+if check( package, "seeall", 5.1 ) then
+  _ = annotate[=[
+##                   The `package.seeall` Function                  ##
+
+]=] .. package.seeall
+end
+
+if check( package, "searchpath", 5.2 ) then
+  _ = annotate[=[
+##                 The `package.searchpath` Function                ##
+
+]=] .. package.searchpath
 end
 
 ----------------------------------------------------------------------
@@ -271,11 +615,29 @@ if check( _G, "string", 5.1 ) then
   _ = annotate[=[
 ##                        String Manipulation                       ##
 
+Lua's `string` library provides the following functions, which by
+default can also be called using method syntax:
+
+*   `string.byte` -- Convert strings to numerical character codes.
+*   `string.char` -- Convert numerical character codes to strings.
+*   `string.dump` -- Dump a functions bytecode as a string.
+*   `string.find` -- Find start/stop indices of a pattern match.
+*   `string.format` -- Generate string according to format spec.
+*   `string.gmatch` -- Iterate over matching sub-strings.
+*   `string.gsub` -- Replace parts of a string.
+*   `string.len` -- Get a strings length in bytes.
+*   `string.lower` -- Turn uppercase letters to lowercase.
+*   `string.match` -- Try to match a string to a pattern.
+*   `string.rep` -- Repeat and concatenate a string `n` times.
+*   `string.reverse` -- Reverse bytes in a string.
+*   `string.sub` -- Extract sub-string.
+*   `string.upper` -- Turn lowercase letters to uppercase.
 ]=] .. string
 end
 
 if check( string, "byte", 5.1 ) then
   _ = annotate[=[
+##                    The `string.byte` Function                    ##
 
 ]=] .. string.byte
 end
@@ -283,10 +645,30 @@ end
 ----------------------------------------------------------------------
 -- table library
 
-if check( _G, "table", 5.1 ) then
+if check( _G, "table", V >= 5.1 and V < 5.2 ) then
   _ = annotate[=[
 ##                        Table Manipulation                        ##
 
+The following functions are defined in Lua's `table` library:
+
+*   `table.concat` -- Concatenate strings of an array int one string.
+*   `table.insert` -- Insert an element anywhere in an array.
+*   `table.maxn` -- Determine largest positive numerical integer key.
+*   `table.remove` -- Remove one element anywhere in an array.
+*   `table.sort` -- Sort the elements of an array in-place.
+]=] .. _G.table
+elseif check( _G, "table", 5.2 ) then
+  _ = annotate[=[
+##                        Table Manipulation                        ##
+
+The following functions are defined in Lua's `table` library:
+
+*   `table.concat` -- Concatenate strings of an array int one string.
+*   `table.insert` -- Insert an element anywhere in an array.
+*   `table.pack` -- Convert an argument list to an array.
+*   `table.remove` -- Remove one element anywhere in an array.
+*   `table.sort` -- Sort the elements of an array in-place.
+*   `table.unpack` -- Convert an array to multiple values (vararg).
 ]=] .. _G.table
 end
 
@@ -300,6 +682,14 @@ if check( table, "concat", 5.1 ) then
         i   : integer   -- starting index, defaults to 1
         j   : integer   -- end index, defaults to #list
 
+The `table.concat` function converts the elements of an array into
+strings (if they are numbers) and joins them together to a single
+string which is returned. An optional separator is inserted between
+every element pair. Optional start and end indices allow for selecting
+a sub-range of the array. If an element is encountered that is neither
+number nor string, an error is raised. An empty array (or sub-range)
+results in the empty string `""`.
+
 ###                            Examples                            ###
 
     > t = { 1, 2, "3", 4, 5 }
@@ -311,13 +701,18 @@ if check( table, "concat", 5.1 ) then
     3,4,5
     > =table.concat( t, "|", 2, 4 )
     2|3|4
-
 ]=] .. table.concat
 end
 
 ----------------------------------------------------------------------
 
 local M = {}
+
+
+local function trim( s )
+  return (s_gsub( s, "^%s*(.-)%s*$", "%1" ))
+end
+
 
 local function try_require( str, ... )
   local ok, v = pcall( require, str )
@@ -333,16 +728,20 @@ local function try_require( str, ... )
     end
   end
   if v ~= nil and docstring_cache[ v ] then
-    return docstring_cache[ v ]
+    return trim( docstring_cache[ v ] )
   end
   local s, n = s_match( str, "^([%a_][%w_%.]*)%.([%a_][%w_]*)$" )
   return s and try_require( s, n, ... )
 end
 
-local function lookup( v )
+
+local function lookup( self, v )
+  if self ~= M then
+    self, v = M, self
+  end
   local s = docstring_cache[ v ]
   if s ~= nil then
-    return s
+    return trim( s )
   end
   if type( v ) == "string" then
     return try_require( v )
@@ -356,7 +755,7 @@ local function wrap( self, fun, writer )
   end
   writer = writer or function( s ) print( s ) end
   return function( ... )
-    local s = lookup( ... )
+    local s = lookup( self, ... )
     if s then
       writer( s, ... )
     else
@@ -367,10 +766,16 @@ end
 
 
 local delim = s_rep( "-", 70 )
+local ansi_high = "\027[34;40;1m"
+local ansi_reset = "\027[39;49;0m"
 
-local function search( self, s )
+local function ansi_highlight( v )
+  return ansi_high .. v .. ansi_reset
+end
+
+local function search( self, s, hilighter )
   if self ~= M then
-    self, s = M, self
+    self, s, hilighter = M, self, s
   end
   local first_match = true
   for v,ds in pairs( docstring_cache ) do
@@ -378,7 +783,11 @@ local function search( self, s )
       if not first_match then
         print( delim )
       end
-      print( ds )
+      if type( hilighter ) == "function" then
+        print( trim( s_gsub( ds, "("..s..")" , hilighter ) ) )
+      else
+        print( trim( ds ) )
+      end
       first_match = false
     end
   end
@@ -391,10 +800,12 @@ end
 local M_meta = {
   __index = {
     wrap = wrap,
+    lookup = lookup,
     search = search,
+    ansi_highlight = ansi_highlight,
   },
   __call = function( _, topic )
-    print( lookup( topic ) or
+    print( lookup( M, topic ) or
            "no help available for "..tostring( topic ) )
   end,
 }
