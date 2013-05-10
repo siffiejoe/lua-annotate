@@ -40,13 +40,26 @@ local function check( t, name, cond )
   return cond and type( t ) == "table" and t[ name ] ~= nil
 end
 
-local _ -- dummy variable used later (a lot)
+-- disable type checking temporarily
+local ARG_C, RET_C = false, false
+if type( package ) == "table" then
+  local p_loaded = package.loaded
+  if type( p_loaded ) == "table" then
+    local c = p_loaded[ "annotate.check" ]
+    if type( c ) == "table" then
+      ARG_C, RET_C = c.arguments, c.return_values
+      c.arguments, c.return_values = false, false
+    end
+  end
+end
+
+local A
 
 ----------------------------------------------------------------------
 -- base library
 
 if check( _G, "_G", V >= 5.1 and V < 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                         Lua Base Library                         ##
 
 Lua's base library defines the following global functions:
@@ -90,8 +103,11 @@ Typically, the following libraries/tables are available:
 *   `string` -- Functions for manipulating strings.
 *   `table` -- Functions for manipulating arrays.
 ]=] .. _G
-elseif check( _G, "_G", 5.2 ) then
-  _ = annotate[=[
+  assert( A == _G, "_G modified by annotate plugin" )
+end
+
+if check( _G, "_G", 5.2 ) then
+  A = annotate[=[
 ##                         Lua Base Library                         ##
 
 Lua's base library defines the following global functions:
@@ -132,10 +148,11 @@ Typically, the following libraries/tables are available:
 *   `string` -- Functions for manipulating strings.
 *   `table` -- Functions for manipulating arrays.
 ]=] .. _G
+  assert( A == _G, "_G modified by annotate plugin" )
 end
 
 if check( _G, "assert", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                       The `assert` Function                      ##
 
     assert( cond, ... ) ==> any*
@@ -153,26 +170,334 @@ argument, a generic error message is used.
     > =assert( true, 1, "two", {} )
     true    1       two     table: ...
     > =assert( false, "my error message", {} )
-    stdin:1: my error message
+    ...: my error message
     stack traceback:
             ...
     > function f() return nil end
     > assert( f() )
-    stdin:1: assertion failed!
+    ...: assertion failed!
     stack traceback:
             ...
 ]=] .. _G.assert
+  if A ~= _G.assert then _G.assert = A end
 end
 
-if check( _G, "pairs", 5.1 ) then
-  _ = annotate[=[
+if check( _G, "collectgarbage", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                   The `collectgarbage` Function                  ##
+
+    collectgarbage( [opt [, arg]] ) ==> number/boolean
+        opt: string   -- one of a set of commands
+        arg: integer
+]=] .. _G.collectgarbage
+  if A ~= _G.collectgarbage then _G.collectgarbage = A end
+end
+
+if check( _G, "collectgarbage", 5.2 ) then
+  A = annotate[=[
+##                   The `collectgarbage` Function                  ##
+
+    collectgarbage( [opt [, arg]] ) ==> number, integer
+                                    ==> integer
+                                    ==> boolean
+        opt: string   -- one of a set of commands
+        arg: integer
+]=] .. _G.collectgarbage
+  if A ~= _G.collectgarbage then _G.collectgarbage = A end
+end
+
+if check( _G, "dofile", 5.1 ) then
+  A = annotate[=[
+##                       The `dofile` Function                      ##
+
+    dofile( [filename] ) ==> any*
+        filename: string  -- file name to load and run
+]=] .. _G.dofile
+  if A ~= _G.dofile then _G.dofile = A end
+end
+
+if check( _G, "error", 5.1 ) then
+  A = annotate[=[
+##                       The `error` Function                       ##
+
+    error( message [, level] )
+        message: any      -- an error message (typically a string)
+        level  : integer  -- stack level where the error is raised
+]=] .. _G.error
+  if A ~= _G.error then _G.error = A end
+end
+
+if check( _G, "getfenv", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                      The `getfenv` Function                      ##
+
+    getfenv( [f] ) ==> table/nil
+        f: function/integer  -- a function or a stack index
+]=] .. _G.getfenv
+  if A ~= _G.getfenv then _G.getfenv = A end
+end
+
+if check( _G, "getmetatable", 5.1 ) then
+  A = annotate[=[
+##                    The `getmetatable` Function                   ##
+
+    getmetatable( object ) ==> table/nil
+]=] .. _G.getmetatable
+  if A ~= _G.getmetatable then _G.getmetatable = A end
+end
+
+if check( _G, "ipairs", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                       The `ipairs` Function                      ##
+
+    ipairs( table ) ==> function, (any, any?)?
+]=] .. _G.ipairs
+  if A ~= _G.ipairs then _G.ipairs = A end
+end
+
+if check( _G, "ipairs", 5.2 ) then
+  A = annotate[=[
+##                       The `ipairs` Function                      ##
+
+    ipairs( object ) ==> function, (any, any?)?
+]=] .. _G.ipairs
+  if A ~= _G.ipairs then _G.ipairs = A end
+end
+
+if check( _G, "load", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                        The `load` Function                       ##
+
+    load( func [, chunkname] ) ==> function     -- on success
+                               ==> nil, string  -- in case of error
+        func     : function  -- function to produce Lua code
+        chunkname: string    -- name to use in error messages
+]=] .. _G.load
+  if A ~= _G.load then _G.load = A end
+end
+
+if check( _G, "load", 5.2 ) then
+  A = annotate[=[
+##                        The `load` Function                       ##
+
+    load( ld [, source [, mode [, env]]] ) ==> function     -- success
+                                           ==> nil, string  -- error
+        ld    : function/string  -- (function producing) Lua code
+        source: string           -- name of the chunk for messages
+        mode  : string           -- allow text/binary Lua code
+        env   : table            -- the environment to load in
+]=] .. _G.load
+  if A ~= _G.load then _G.load = A end
+end
+
+if check( _G, "loadfile", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                      The `loadfile` Function                     ##
+
+    loadfile( [filename] ) ==> function     -- on success
+                           ==> nil, string  -- in case of error
+        filename: string  -- file name to load
+]=] .. _G.loadfile
+  if A ~= _G.loadfile then _G.loadfile = A end
+end
+
+if check( _G, "loadfile", 5.2 ) then
+  A = annotate[=[
+##                      The `loadfile` Function                     ##
+
+    loadfile( [filename [, mode [, env ]]] ) ==> function     -- ok
+                                             ==> nil, string  -- error
+        filename: string  -- file name to load
+        mode    : string  -- allow text/binary Lua code
+        env     : table   -- the environment to load in
+]=] .. _G.loadfile
+  if A ~= _G.loadfile then _G.loadfile = A end
+end
+
+if check( _G, "loadstring", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                     The `loadstring` Function                    ##
+
+    loadstring( string [, chunkname] ) ==> function     -- on success
+                                       ==> nil, string  -- on error
+        chunkname: string  -- name used in error messages
+]=] .. _G.loadstring
+  if A ~= _G.loadstring then _G.loadstring = A end
+end
+
+if check( _G, "module", V >= 5.1 and V < 5.3 ) then
+  A = annotate[=[
+##                       The `module` Function                      ##
+
+    module( name [, ...] )
+        name: string     -- the module name as passed to require
+        ... : function*  -- options/modifiers for the module
+]=] .. _G.module
+  if A ~= _G.module then _G.module = A end
+end
+
+if check( _G, "next", 5.1 ) then
+  A = annotate[=[
+##                        The `next` Function                       ##
+
+    next( table [, index] ) ==> any, any?
+        index: any  -- current key in table, defaults to nil
+]=] .. _G.next
+  if A ~= _G.next then _G.next = A end
+end
+
+if check( _G, "pairs", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
 ##                       The `pairs` Function                       ##
 
+    pairs( table ) ==> function, (any, any?)?
 ]=] .. _G.pairs
+  if A ~= _G.pairs then _G.pairs = A end
+end
+
+if check( _G, "pairs", 5.2 ) then
+  A = annotate[=[
+##                       The `pairs` Function                       ##
+
+    pairs( object ) ==> function, (any, any?)?
+]=] .. _G.pairs
+  if A ~= _G.pairs then _G.pairs = A end
+end
+
+if check( _G, "pcall", 5.1 ) then
+  A = annotate[=[
+##                       The `pcall` Function                       ##
+
+    pcall( function, ... ) ==> boolean, any*
+        ...: any*  -- arguments for the function
+]=] .. _G.pcall
+  if A ~= _G.pcall then _G.pcall = A end
+end
+
+if check( _G, "print", 5.1 ) then
+  A = annotate[=[
+##                       The `print` Function                       ##
+
+    print( ... )
+        ...: any*  -- values to print
+]=] .. _G.print
+  if A ~= _G.print then _G.print = A end
+end
+
+if check( _G, "rawequal", 5.1 ) then
+  A = annotate[=[
+##                      The `rawequal` Function                     ##
+
+    rawequal( v1, v2 ) ==> boolean
+        v1: any
+        v2: any
+]=] .. _G.rawequal
+  if A ~= _G.rawequal then _G.rawequal = A end
+end
+
+if check( _G, "rawget", 5.1 ) then
+  A = annotate[=[
+##                       The `rawget` Function                      ##
+
+    rawget( table, index ) ==> any
+        index: any  -- key to query table for
+]=] .. _G.rawget
+  if A ~= _G.rawget then _G.rawget = A end
+end
+
+if check( _G, "rawlen", 5.2 ) then
+  A = annotate[=[
+##                       The `rawlen` Function                      ##
+
+    rawlen( v ) ==> integer
+      v: string/table
+]=] .. _G.rawlen
+  if A ~= _G.rawlen then _G.rawlen = A end
+end
+
+if check( _G, "rawset", 5.1 ) then
+  A = annotate[=[
+##                       The `rawset` Function                      ##
+
+    rawset( table, index, value )
+        index: any  -- key to use
+        value: any  -- value to add to the table
+]=] .. _G.rawset
+  if A ~= _G.rawset then _G.rawset = A end
+end
+
+if check( _G, "require", 5.1 ) then
+  A = annotate[=[
+##                      The `require` Function                      ##
+
+    require( modname ) ==> any
+        modname: string  -- the name of the module to load
+]=] .. _G.require
+  if A ~= _G.require then _G.require = A end
+end
+
+if check( _G, "select", 5.1 ) then
+  A = annotate[=[
+##                       The `select` Function                      ##
+
+    select( index, ... ) ==> any*
+        index: string/integer  -- index to select or `"#"`
+        ...  : any*            -- varargs
+]=] .. _G.select
+  if A ~= _G.select then _G.select = A end
+end
+
+if check( _G, "setfenv", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                      The `setfenv` Function                      ##
+
+    setfenv( f, table ) ==> function?
+        f: function/integer  -- (stack index of) function to modify
+]=] .. _G.setfenv
+  if A ~= _G.setfenv then _G.setfenv = A end
+end
+
+if check( _G, "setmetatable", 5.1 ) then
+  A = annotate[=[
+##                    The `setmetatable` Function                   ##
+
+    setmetatable( table, metatable ) ==> table
+        metatable: table/nil  -- table to use as a metatable
+]=] .. _G.setmetatable
+  if A ~= _G.setmetatable then _G.setmetatable = A end
+end
+
+if check( _G, "tonumber", 5.1 ) then
+  A = annotate[=[
+##                      The `tonumber` Function                     ##
+
+    tonumber( v [, base] ) ==> nil/number
+        v   : any     -- value to convert
+        base: integer -- base for conversion if not decimal
+]=] .. _G.tonumber
+  if A ~= _G.tonumber then _G.tonumber = A end
+end
+
+if check( _G, "tostring", 5.1 ) then
+  A = annotate[=[
+##                      The `tostring` Function                     ##
+
+    tostring( any ) ==> string
+]=] .. _G.tostring
+  if A ~= _G.tostring then _G.tostring = A end
+end
+
+if check( _G, "type", 5.1 ) then
+  A = annotate[=[
+##                        The `type` Function                       ##
+
+    type( any ) ==> string
+]=] .. _G.type
+  if A ~= _G.type then _G.type = A end
 end
 
 if check( _G, "unpack", V >= 5.1 and V < 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                       The `unpack` Function                      ##
 
     unpack( list [, i [, j]] ) ==> any*
@@ -197,13 +522,35 @@ but in this case explicit start and end indices must be given.
     > =unpack( { 1, nil, nil, 4 }, 1, 4 )
     1       nil     nil     4
 ]=] .. _G.unpack
+  if A ~= _G.unpack then _G.unpack = A end
+end
+
+if check( _G, "xpcall", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                       The `xpcall` Function                      ##
+
+    xpcall( function, err ) ==> boolean, any*
+        err: function  -- error handler (for producing stack traces)
+]=] .. _G.xpcall
+  if A ~= _G.xpcall then _G.xpcall = A end
+end
+
+if check( _G, "xpcall", 5.2 ) then
+  A = annotate[=[
+##                       The `xpcall` Function                      ##
+
+    xpcall( function, err, ... ) ==> boolean, any*
+        err: function  -- error handler (for producing stack traces)
+        ...: any*      -- arguments for the function
+]=] .. _G.xpcall
+  if A ~= _G.xpcall then _G.xpcall = A end
 end
 
 ----------------------------------------------------------------------
 -- bit32 library
 
 if check( _G, "bit32", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                        Bitwise Operations                        ##
 
 The following functions are provided by Lua's `bit32` library:
@@ -221,20 +568,24 @@ The following functions are provided by Lua's `bit32` library:
 *   `bit32.rrotate` -- Right bit-shift (bits re-enter on the left).
 *   `bit32.rshift` -- Normal bit-shift to the right.
 ]=] .. bit32
+  assert( A == bit32, "bit32 table modified by annotate plugin" )
 end
 
 if check( bit32, "arshift", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                   The `bit32.arshift` Function                   ##
 
+    bit32.arshift( number [, disp] ) ==> integer
+        disp: integer  -- number of bits to shift
 ]=] .. bit32.arshift
+  if A ~= bit32.arshift then bit32.arshift = A end
 end
 
 ----------------------------------------------------------------------
 -- coroutine library
 
 if check( _G, "coroutine", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                      Coroutine Manipulation                      ##
 
 The `coroutine` table, which is part of Lua's base library, contains
@@ -247,20 +598,23 @@ the following functions:
 *   `coroutine.wrap` -- Create coroutines, disguise them as functions.
 *   `coroutine.yield` -- Suspend execution of current coroutine.
 ]=] .. coroutine
+  assert( A == coroutine, "coroutine table modified by annotate plugin" )
 end
 
 if check( coroutine, "create", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                  The `coroutine.create` Function                 ##
 
+    coroutine.create( function ) ==> thread
 ]=] .. coroutine.create
+  if A ~= coroutine.create then coroutine.create = A end
 end
 
 ----------------------------------------------------------------------
 -- debug library
 
 if check( _G, "debug", V >= 5.1 and V < 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                         The Debug Library                        ##
 
 Lua's `debug` library provides the following functions:
@@ -280,8 +634,9 @@ Lua's `debug` library provides the following functions:
 *   `debug.setupvalue` -- Set the value of an upvalue for a function.
 *   `debug.traceback` -- Traceback generator for `xpcall`
 ]=] .. debug
+  assert( A == debug, "debug table modified by annotate plugin" )
 elseif check( _G, "debug", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                         The Debug Library                        ##
 
 Lua's `debug` library provides the following functions:
@@ -303,20 +658,23 @@ Lua's `debug` library provides the following functions:
 *   `debug.upvalueid` -- Uniquely identify an upvalue.
 *   `debug.upvaluejoin` -- Make upvalue of function refer to another.
 ]=] .. debug
+  assert( A == debug, "debug table modified by annotate plugin" )
 end
 
 if check( debug, "debug", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `debug.debug` Function                    ##
 
+    debug.debug()
 ]=] .. debug.debug
+  if A ~= debug.debug then debug.debug = A end
 end
 
 ----------------------------------------------------------------------
 -- io library
 
 if check( _G, "io", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    Input and Output Facilities                   ##
 
 Lua's `io` library contains the following fields/functions:
@@ -346,31 +704,38 @@ Lua file handles have the following methods:
 *   `file:setvbuf` -- Set buffering mode for an output file object.
 *   `file:write` -- Write strings (or numbers) to a file object.
 ]=] .. io
+  assert( A == io, "io table modified by annotate plugin" )
 end
 
 if check( io, "close", V >= 5.1 and V < 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                      The `io.close` Function                     ##
 
+    io.close( [file] )
 ]=] .. io.close
+  if A ~= io.close then io.close = A end
 end
 
 if check( io, "close", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                      The `io.close` Function                     ##
 
+    io.close( [file] ) ==> (boolean/nil, string, integer)?
 ]=] .. io.close
+  if A ~= io.close then io.close = A end
 end
 
 if check( io, "flush", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                      The `io.flush` Function                     ##
 
+    io.flush()
 ]=] .. io.flush
+  if A ~= io.flush then io.flush = A end
 end
 
 if check( io, "stderr", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `io.stderr` File Object                   ##
 
 The `io.stderr` file object represents the `stderr` file stream of C
@@ -388,10 +753,11 @@ It supports the following methods:
 (The methods for input are available too, but make no sense for an
 output file object.)
 ]=] .. io.stderr
+  assert( A == io.stderr, "io.stderr modified by annotate plugin" )
 end
 
 if check( io, "stdin", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `io.stdin` File Object                   ##
 
 The `io.stdin` file object represents the `stdin` file stream of C
@@ -408,10 +774,11 @@ It supports the following methods:
 (The methods for output are available too, but make no sense for an
 input file object.)
 ]=] .. io.stdin
+  assert( A == io.stdin, "io.stdin modified by annotate plugin" )
 end
 
 if check( io, "stdout", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `io.stdout` File Object                   ##
 
 The `io.stdout` file object represents the `stdout` file stream of C
@@ -429,6 +796,7 @@ It supports the following methods:
 (The methods for input are available too, but make no sense for an
 output file object.)
 ]=] .. io.stdout
+  assert( A == io.stdout, "io.stdout modified by annotate plugin" )
 end
 
 -- get access to file methods
@@ -445,21 +813,36 @@ if type( debug ) == "table" and type( io ) == "table" then
   end
 end
 
-if check( file, "close", 5.1 ) then
+if check( file, "close", V >= 5.1 and V < 5.2 ) then
   if io.close ~= file.close then
-    _ = annotate[=[
+    A = annotate[=[
 ##                     The `file:close()` Method                    ##
 
+    file:close()
 ]=] .. file.close
+    if A ~= file.close then file.close = A end
+  end
+end
+
+if check( file, "close", 5.2 ) then
+  if io.close ~= file.close then
+    A = annotate[=[
+##                     The `file:close()` Method                    ##
+
+    file:close() ==> (boolean/nil, string, integer)?
+]=] .. file.close
+    if A ~= file.close then file.close = A end
   end
 end
 
 if check( file, "flush", 5.1 ) then
   if io.flush ~= file.flush then
-    _ = annotate[=[
+    A = annotate[=[
 ##                     The `file:flush()` Method                    ##
 
+    file:flush()
 ]=] .. file.flush
+    if A ~= file.flush then file.flush = A end
   end
 end
 
@@ -467,7 +850,7 @@ end
 -- math library
 
 if check( _G, "math", V >= 5.1 and V < 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                      Mathematical Functions                      ##
 
 The following functions/values are available in Lua's `math` library:
@@ -503,8 +886,9 @@ The following functions/values are available in Lua's `math` library:
 *   `math.tan` -- Get tangent of a number (in radians)
 *   `math.tanh` -- Get hyperbolic tangent of a number (in radians).
 ]=] .. math
+  assert( A == math, "math table modified by annotate plugin" )
 elseif check( _G, "math", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                      Mathematical Functions                      ##
 
 The following functions are available in Lua's `math` library:
@@ -539,20 +923,23 @@ The following functions are available in Lua's `math` library:
 *   `math.tan` -- Get tangent of a number (in radians)
 *   `math.tanh` -- Get hyperbolic tangent of a number (in radians).
 ]=] .. math
+  assert( A == math, "math table modified by annotate plugin" )
 end
 
 if check( math, "abs", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                      The `math.abs` Function                     ##
 
+    math.abs( number ) ==> number
 ]=] .. math.abs
+  if A ~= math.abs then math.abs = A end
 end
 
 ----------------------------------------------------------------------
 -- os library
 
 if check( _G, "os", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    Operating System Facilities                   ##
 
 Lua defines the following functions in its `os` library:
@@ -569,20 +956,23 @@ Lua defines the following functions in its `os` library:
 *   `os.time` -- Get a time value for a given date (or for now).
 *   `os.tmpname` -- Get a file name usable as a temporary file.
 ]=] .. os
+  assert( A == os, "os table modified by annotate plugin" )
 end
 
 if check( os, "clock", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                      The `os.clock` Function                     ##
 
+    os.clock() ==> number
 ]=] .. os.clock
+  if A ~= os.clock then os.clock = A end
 end
 
 ----------------------------------------------------------------------
 -- package table
 
 if check( _G, "package", V >= 5.1 and V < 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                         The Package Table                        ##
 
 The `package` table, which is part of Lua's base library, contains the
@@ -597,8 +987,9 @@ following fields:
 *   `package.preload` -- Table of loader functions for modules.
 *   `package.seeall` -- Import global environment for modules.
 ]=] .. package
+  assert( A == package, "package table modified by annotate plugin" )
 elseif check( _G, "package", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                         The Package Table                        ##
 
 The `package` table, which is part of Lua's base library, contains the
@@ -613,10 +1004,11 @@ following fields:
 *   `package.searchers` -- Functions used for finding/loading modules.
 *   `package.searchpath` -- Search for a name using a path template.
 ]=] .. package
+  assert( A == package, "package table modified by annotate plugin" )
 end
 
 if check( package, "loaded", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `package.loaded` Table                    ##
 
 The `require` function caches every module it loads (or rather the
@@ -635,10 +1027,12 @@ manually, though.
     > =require( "my.special.module" )
     hello
 ]=] .. package.loaded
+  assert( A == package.loaded,
+          "package.loaded modified by annotate plugin" )
 end
 
 if check( package, "loaders", V >= 5.1 and V < 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `package.loaders` Table                   ##
 
 `package.loaders` is a reference to an internal array of functions
@@ -649,10 +1043,12 @@ and then resort to loading dynamic C libraries via `package.loadlib`
 and `package.cpath`/`LUA_CPATH`. As it is just an alias, setting
 `package.loaders` to a new table has no effect on module loading.
 ]=] .. package.loaders
+  assert( A == package.loaders,
+          "package.loaders modified by annotate plugin" )
 end
 
 if check( package, "loadlib", V >= 5.1 and V < 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                  The `package.loadlib` Function                  ##
 
     package.loadlib( libname, funcname ) ==> function    -- on success
@@ -665,10 +1061,11 @@ with the given name and looks for the given function symbol in the
 library. On success, the symbol is returned as a function, otherwise
 nil and an error message is returned.
 ]=] .. package.loadlib
+  if A ~= package.loadlib then package.loadlib = A end
 end
 
 if check( package, "loadlib", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                  The `package.loadlib` Function                  ##
 
     package.loadlib( libname, funcname ) ==> function    -- on success
@@ -683,10 +1080,11 @@ nil and an error message is returned. `funcname` may be `"*"` in which
 case the library is linked and can serve as a prerequisite for other
 dynamic C libraries, but no function is returned.
 ]=] .. package.loadlib
+  if A ~= package.loadlib then package.loadlib = A end
 end
 
 if check( package, "preload", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `package.preload` Table                   ##
 
 The `package.preload` table is a table (or rather an alias for a table
@@ -708,10 +1106,12 @@ no effect on module loading.
     > =require( "my.special.mod" )
     hello again
 ]=] .. package.preload
+  assert( A == package.preload,
+          "package.preload modified by annotate plugin" )
 end
 
 if check( package, "searchers", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                   The `package.searchers` Table                  ##
 
 `package.searchers` is a reference to an internal array of functions
@@ -722,10 +1122,12 @@ and then resort to loading dynamic C libraries via `package.loadlib`
 and `package.cpath`/`LUA_CPATH`. As it is just an alias, setting
 `package.searchers` to a new table has no effect on module loading.
 ]=] .. package.searchers
+  assert( A == package.searchers,
+          "package.searchers modified by annotate plugin" )
 end
 
 if check( package, "searchpath", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                 The `package.searchpath` Function                ##
 
     package.searchpath( name, path [, sep [, rep]] )
@@ -748,7 +1150,7 @@ directory separator listed in `package.config` (and defined in
 
 ###                            Examples                            ###
 
-    > =package.searchpath( "my.weird.f_name", "./?.x;?.t", nil, "/" )
+    > =package.searchpath( "my.weird.f_name", "./?.x;?.t", ".", "/" )
     nil
             no file './my/weird/f_name.x'
             no file 'my/weird/f_name.t'
@@ -756,10 +1158,11 @@ directory separator listed in `package.config` (and defined in
     nil
             no file 'my.weird.fXname.t_t'
 ]=] .. package.searchpath
+  if A ~= package.searchpath then package.searchpath = A end
 end
 
 if check( package, "seeall", V >= 5.1 and V < 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                   The `package.seeall` Function                  ##
 
     package.seeall( module )
@@ -770,13 +1173,14 @@ passed as the second argument to the `module` function to make the
 global environment available inside the module's code by setting a
 metatable with an `__index` metamethod for the module table.
 ]=] .. package.seeall
+  if A ~= package.seeall then package.seeall = A end
 end
 
 ----------------------------------------------------------------------
 -- string library
 
 if check( _G, "string", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                        String Manipulation                       ##
 
 Lua's `string` library provides the following functions, which by
@@ -797,20 +1201,25 @@ default can also be called using method syntax:
 *   `string.sub` -- Extract sub-string.
 *   `string.upper` -- Turn lowercase letters to uppercase.
 ]=] .. string
+  assert( A == string, "string table modified by annotate plugin" )
 end
 
 if check( string, "byte", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `string.byte` Function                    ##
 
+    string.byte( string [, i [, j]] ) ==> integer*
+        i: integer  -- starting index for sub-string, defaults to 1
+        j: integer  -- end index for sub-string, defaults to #string
 ]=] .. string.byte
+  if A ~= string.byte then string.byte = A end
 end
 
 ----------------------------------------------------------------------
 -- table library
 
 if check( _G, "table", V >= 5.1 and V < 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                        Table Manipulation                        ##
 
 The following functions are defined in Lua's `table` library:
@@ -820,9 +1229,10 @@ The following functions are defined in Lua's `table` library:
 *   `table.maxn` -- Determine largest positive numerical integer key.
 *   `table.remove` -- Remove one element anywhere in an array.
 *   `table.sort` -- Sort the elements of an array in-place.
-]=] .. _G.table
+]=] .. table
+  assert( A == table, "table table modified by annotate plugin" )
 elseif check( _G, "table", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                        Table Manipulation                        ##
 
 The following functions are defined in Lua's `table` library:
@@ -833,11 +1243,12 @@ The following functions are defined in Lua's `table` library:
 *   `table.remove` -- Remove one element anywhere in an array.
 *   `table.sort` -- Sort the elements of an array in-place.
 *   `table.unpack` -- Convert an array to multiple values (vararg).
-]=] .. _G.table
+]=] .. table
+  assert( A == table, "table table modified by annotate plugin" )
 end
 
 if check( table, "concat", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `table.concat` Function                   ##
 
     table.concat( list [, sep [, i [, j]]] ) ==> string
@@ -867,10 +1278,11 @@ metamethods.
     > =table.concat( t, "|", 2, 4 )
     2|3|4
 ]=] .. table.concat
+  if A ~= table.concat then table.concat = A end
 end
 
 if check( table, "insert", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `table.insert` Function                   ##
 
     table.insert( list, [pos,] value )
@@ -894,10 +1306,11 @@ metamethods. The array must *not* contain holes!
     > =t[ 1 ], t[ 2 ], t[ 3 ], t[ 4 ], t[ 5 ]
     1       1.5     2       3       4
 ]=] .. table.insert
+  if A ~= table.insert then table.insert = A end
 end
 
 if check( table, "maxn", V >= 5.1 and V < 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                     The `table.maxn` Function                    ##
 
     table.maxn( table ) ==> number
@@ -918,13 +1331,15 @@ length operator (`#`) on the table.
     > =table.maxn( { a=1 } )
     0
 ]=] .. table.maxn
+  if A ~= table.maxn then table.maxn = A end
 end
 
 if check( table, "pack", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                     The `table.pack` Function                    ##
 
     table.pack( ... ) ==> table
+        ...: any*  -- arguments/vararg to put into table
 
 The `table.pack` function collects all its arguments in an array and
 returns it. The `n` field of the returned table is set to the number
@@ -942,10 +1357,11 @@ proper array.
     a       b       nil     d       4
 
 ]=] .. table.pack
+  if A ~= table.pack then table.pack = A end
 end
 
 if check( table, "remove", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `table.remove` Function                   ##
 
     table.remove( list [, pos] ) ==> any
@@ -970,10 +1386,11 @@ metamethods. The array must *not* contain holes!
     > =t[ 1 ], t[ 2 ], t[ 3 ], t[ 4 ]
     1       3       4       nil
 ]=] .. table.remove
+  if A ~= table.remove then table.remove = A end
 end
 
 if check( table, "sort", 5.1 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                     The `table.sort` Function                    ##
 
     table.sort( list [, comp] )
@@ -1000,10 +1417,11 @@ holes! The sort algorithm is not stable.
     > =t[ 1 ], t[ 2 ], t[ 3 ], t[ 4 ], t[ 5 ], t[ 6 ]
     5       4       3       2       2       1
 ]=] .. table.sort
+  if A ~= table.sort then table.sort = A end
 end
 
 if check( table, "unpack", 5.2 ) then
-  _ = annotate[=[
+  A = annotate[=[
 ##                    The `table.unpack` Function                   ##
 
     table.unpack( list [, i [, j]] ) ==> any*
@@ -1028,6 +1446,20 @@ holes, but in this case explicit start and end indices must be given.
     > =table.unpack( { 1, nil, nil, 4 }, 1, 4 )
     1       nil     nil     4
 ]=] .. table.unpack
+  if A ~= table.unpack then table.unpack = A end
+end
+
+----------------------------------------------------------------------
+
+-- reenable type checking
+if ARG_C ~= false or RET_C ~= false then
+  local c = package.loaded[ "annotate.check" ]
+  if ARG_C ~= false then
+    c.arguments = ARG_C
+  end
+  if RET_C ~= false then
+    c.return_values = RET_C
+  end
 end
 
 ----------------------------------------------------------------------

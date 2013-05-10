@@ -9,9 +9,7 @@ end
 local annotate = require( "annotate" )
 local check = require( "annotate.check" )
 local test = require( "annotate.test" )
-check.enabled = false
 local help = require( "annotate.help" )
-check.enabled = true
 
 -- load https://github.com/dlaurie/lua-ihelp
 local ldoc_help
