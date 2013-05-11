@@ -86,7 +86,7 @@ When run, the above example will output:
             [C]: in ?
 
 
-##                             Reference                            ##
+##                        The annotate Module                       ##
 
 By itself the `annotate` module does nothing except providing syntax
 for associating a docstring with a Lua value. It does so using a
@@ -120,7 +120,7 @@ called is unspecified (and shouldn't matter anyway). Their return
 values are ignored.
 
 
-###                    The annotate.check Module                   ###
+##                     The annotate.check Module                    ##
 
 The `annotate.check` module registers itself with the `annotate`
 module when require'd (see above). For every function that gets
@@ -131,7 +131,7 @@ version. Various fields in the `annotate.check` module table can be
 used to fine-tune the type checking (see below).
 
 
-####                   Function Signature Syntax                  ####
+###                    Function Signature Syntax                   ###
 
 The `annotate.check` module scans paragraphs (sequences of characters
 delimited by `\n\n`) in the docstring and takes the first that looks
@@ -219,7 +219,7 @@ single line comments at all places where whitespace is allowed.
     which matches tables and userdata.
 
 
-#####                          Examples                          #####
+####                           Examples                           ####
 
     pcall( f [, arg1, ...] ) ==> boolean, any*
         f   : function  -- the function to call in protected mode
@@ -269,7 +269,7 @@ single line comments at all places where whitespace is allowed.
         ...: ((table, string/number) / boolean)*
 
 
-####              Predefined Type Checking Functions              ####
+###               Predefined Type Checking Functions               ###
 
 The table `check.types` (where `check` is the result of the
 `require`-call) comes with some predefined type checking functions.
@@ -344,7 +344,7 @@ functions are available:
   [9]:  http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html
 
 
-####                    Tuning the Type Checker                   ####
+###                     Tuning the Type Checker                    ###
 
 Checking for basic Lua types already helps, but typically support for
 application specific data types is needed. To register a new type
@@ -388,7 +388,7 @@ signature. You can change that by providing a custom error function:
     -- check.errorf = function() end -- ignore completely
 
 
-###                    The annotate.help Module                    ###
+##                     The annotate.help Module                     ##
 
 The `annotate.help` module registers itself with the `annotate`
 module when require'd to provide interactive help for all Lua values
@@ -433,7 +433,7 @@ substrings) looking for a Lua value with an annotation using the
 string as a path.
 
 
-###                    The annotate.test Module                    ###
+##                    The annotate.test Module                    ##
 
 The `annotate.test` module is a simple unit testing module inspired by
 Python's [doctest][11]. The idea is to provide code examples in the
@@ -463,13 +463,13 @@ tests, and only use this module to make sure the examples in the
 documentation stay correct.
 
 
-####                          Test Syntax                         ####
+###                           Test Syntax                          ###
 
 The beginning of the test code section is denoted by a simple header
 or a markdown header (in atx-style format).
 
 *   Simple Header:
-    *   The word `example` (`examples`) or `test` (`tests`) at the
+    *   One of `example`, `examples`, `test`, or `tests` at the
         beginning of a paragraph, optionally followed by a colon
         (`:`), and zero or more empty lines (containing only
         whitespace). 
@@ -477,8 +477,8 @@ or a markdown header (in atx-style format).
         matter.
 
 *   Markdown Header:
-    *   One or more `#` followed by optional whitespace, the word
-        `example` (`examples`) or `test` (`tests`) (again case doesn't
+    *   One or more `#` followed by optional whitespace, one of
+        `example`, `examples`, `test`, or `tests` (again case doesn't
         matter), and zero or more empty lines (containing only
         whitespace).
     *   The markdown header line can optionally be "closed" by
@@ -509,7 +509,7 @@ The test/example section ends with the first non-empty line that is
 not indented at least 4 spaces.
 
 
-#####                          Examples                          #####
+####                           Examples                           ####
 
     local annotate = require( "annotate" )
     local test = require( "annotate.test" )
