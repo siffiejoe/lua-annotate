@@ -66,5 +66,37 @@ print( "searching for getfenv:" )
 help:search( "getfenv", help.ansi_highlight )
 print( delim )
 
+local cache = {}
+local pl = package.loaded
+local ref_types = {
+  ["function"] = true,
+  ["userdata"] = true,
+  ["table"] = true,
+  ["thread"] = true
+}
+
+local function check_doc( name, value )
+  name = name or "_G"
+  value = value or _G
+  local t = type( value )
+  if not ref_types[ t ] then
+    return
+  end
+  if not help:lookup( value ) then
+    print( "no docstring for", name )
+  end
+  if t == "table" then
+    cache[ value ] = true
+    for k,v in pairs( value ) do
+      if value ~= pl and type( k ) == "string" and
+         k:match( "^[%a_][%w_]*$" ) and not cache[ v ] then
+        check_doc( name.."."..k, v )
+      end
+    end
+  end
+end
+check_doc()
+print( delim )
+
 test( tonumber( os.getenv( "VERBOSE" ) ) )
 

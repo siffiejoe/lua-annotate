@@ -232,7 +232,7 @@ if check( _G, "getfenv", V >= 5.1 and V < 5.2 ) then
 ##                      The `getfenv` Function                      ##
 
     getfenv( [f] ) ==> table/nil
-        f: function/integer  -- a function or a stack index
+        f: function/integer  -- a function or a stack level
 ]=] .. _G.getfenv
   if A ~= _G.getfenv then _G.getfenv = A end
 end
@@ -452,7 +452,7 @@ if check( _G, "setfenv", V >= 5.1 and V < 5.2 ) then
 ##                      The `setfenv` Function                      ##
 
     setfenv( f, table ) ==> function?
-        f: function/integer  -- (stack index of) function to modify
+        f: function/integer  -- (stack level of) function to modify
 ]=] .. _G.setfenv
   if A ~= _G.setfenv then _G.setfenv = A end
 end
@@ -471,7 +471,7 @@ if check( _G, "tonumber", 5.1 ) then
   A = annotate[=[
 ##                      The `tonumber` Function                     ##
 
-    tonumber( v [, base] ) ==> nil/number
+    tonumber( v [, base] ) ==> number/nil
         v   : any     -- value to convert
         base: integer -- base for conversion if not decimal
 ]=] .. _G.tonumber
@@ -581,6 +581,132 @@ if check( bit32, "arshift", 5.2 ) then
   if A ~= bit32.arshift then bit32.arshift = A end
 end
 
+if check( bit32, "band", 5.2 ) then
+ A = annotate[=[
+##                     The `bit32.band` Function                    ##
+
+    bit32.band( ... ) ==> integer
+        ...: number*
+]=] .. bit32.band
+  if A ~= bit32.band then bit32.band = A end
+end
+
+if check( bit32, "bnot", 5.2 ) then
+  A = annotate[=[
+##                     The `bit32.bnot` Function                    ##
+
+    bit32.bnot( number ) ==> integer
+]=] .. bit32.bnot
+  if A ~= bit32.bnot then bit32.bnot = A end
+end
+
+if check( bit32, "bor", 5.2 ) then
+ A = annotate[=[
+##                     The `bit32.bor` Function                     ##
+
+    bit32.bor( ... ) ==> integer
+        ...: number*
+]=] .. bit32.bor
+  if A ~= bit32.bor then bit32.bor = A end
+end
+
+if check( bit32, "btest", 5.2 ) then
+  A = annotate[=[
+##                    The `bit32.btest` Function                    ##
+
+    bit32.btest( ... ) ==> boolean
+        ...: number*
+
+The `bit32.btest` function checks whether its arguments have a 1-bit
+in common (i.e. if the bitwise and of its arguments is non-zero). It
+returns true in this case (or if there are no arguments) and false
+otherwise.
+
+###                            Examples                            ###
+
+    > =bit32.btest( 1, 2, 4, 8, 16, 32, 64, 128, 256 )
+    false
+    > =bit32.btest( 1, 3, 5, 9, 17, 33, 65, 129, 257 )
+    true
+    > =bit32.btest()
+    true
+]=] .. bit32.btest
+  if A ~= bit32.btest then bit32.btest = A end
+end
+
+if check( bit32, "bxor", 5.2 ) then
+ A = annotate[=[
+##                     The `bit32.bxor` Function                    ##
+
+    bit32.bxor( ... ) ==> integer
+        ...: number*
+]=] .. bit32.bxor
+  if A ~= bit32.bxor then bit32.bxor = A end
+end
+
+if check( bit32, "extract", 5.2 ) then
+  A = annotate[=[
+##                   The `bit32.extract` Function                   ##
+
+    bit32.extract( number, index [, width] ) ==> integer
+        index: integer  -- starting index of bits to extract
+        width: integer  -- number of bits in field, default is 1
+]=] .. bit32.extract
+  if A ~= bit32.extract then bit32.extract = A end
+end
+
+if check( bit32, "lrotate", 5.2 ) then
+  A = annotate[=[
+##                   The `bit32.lrotate` Function                   ##
+
+    bit32.lrotate( number [, disp] ) ==> integer
+        disp: integer  -- number of bits to shift
+]=] .. bit32.lrotate
+  if A ~= bit32.lrotate then bit32.lrotate = A end
+end
+
+if check( bit32, "lshift", 5.2 ) then
+  A = annotate[=[
+##                    The `bit32.lshift` Function                   ##
+
+    bit32.lshift( number [, disp] ) ==> integer
+        disp: integer  -- number of bits to shift
+]=] .. bit32.lshift
+  if A ~= bit32.lshift then bit32.lshift = A end
+end
+
+if check( bit32, "replace", 5.2 ) then
+  A = annotate[=[
+##                   The `bit32.replace` Function                   ##
+
+    bit32.replace( number, v, index [, width] ) ==> integer
+        v    : number   -- replacement value for the bit field
+        index: integer  -- starting index of bits to replace
+        width: integer  -- number of bits to replace, default is 1
+]=] .. bit32.replace
+  if A ~= bit32.replace then bit32.replace = A end
+end
+
+if check( bit32, "rrotate", 5.2 ) then
+  A = annotate[=[
+##                   The `bit32.rrotate` Function                   ##
+
+    bit32.rrotate( number [, disp] ) ==> integer
+        disp: integer  -- number of bits to shift
+]=] .. bit32.rrotate
+  if A ~= bit32.rrotate then bit32.rrotate = A end
+end
+
+if check( bit32, "rshift", 5.2 ) then
+  A = annotate[=[
+##                    The `bit32.rshift` Function                   ##
+
+    bit32.rshift( number [, disp] ) ==> integer
+        disp: integer  -- number of bits to shift
+]=] .. bit32.rshift
+  if A ~= bit32.rshift then bit32.rshift = A end
+end
+
 ----------------------------------------------------------------------
 -- coroutine library
 
@@ -608,6 +734,53 @@ if check( coroutine, "create", 5.1 ) then
     coroutine.create( function ) ==> thread
 ]=] .. coroutine.create
   if A ~= coroutine.create then coroutine.create = A end
+end
+
+if check( coroutine, "resume", 5.1 ) then
+  A = annotate[=[
+##                  The `coroutine.resume` Function                 ##
+
+    coroutine.resume( thread, ... ) ==> boolean, any*
+        ...: any*  -- arguments passed to the thread
+]=] .. coroutine.resume
+  if A ~= coroutine.resume then coroutine.resume = A end
+end
+
+if check( coroutine, "running", 5.1 ) then
+  A = annotate[=[
+##                 The `coroutine.running` Function                 ##
+
+    coroutine.running() ==> thread/nil
+]=] .. coroutine.running
+  if A ~= coroutine.running then coroutine.running = A end
+end
+
+if check( coroutine, "status", 5.1 ) then
+  A = annotate[=[
+##                  The `coroutine.status` Function                 ##
+
+    coroutine.status( thread ) ==> string
+]=] .. coroutine.status
+  if A ~= coroutine.status then coroutine.status = A end
+end
+
+if check( coroutine, "wrap", 5.1 ) then
+  A = annotate[=[
+##                   The `coroutine.wrap` Function                  ##
+
+    coroutine.wrap( function ) ==> function
+]=] .. coroutine.wrap
+  if A ~= coroutine.wrap then coroutine.wrap = A end
+end
+
+if check( coroutine, "yield", 5.1 ) then
+  A = annotate[=[
+##                  The `coroutine.yield` Function                  ##
+
+    coroutine.yield( ... ) ==> any*
+        ...: any*  -- arguments passed to resume
+]=] .. coroutine.yield
+  if A ~= coroutine.yield then coroutine.yield = A end
 end
 
 ----------------------------------------------------------------------
@@ -642,18 +815,18 @@ elseif check( _G, "debug", 5.2 ) then
 Lua's `debug` library provides the following functions:
 
 *   `debug.debug` -- Start a simple interactive prompt for debugging.
-*   `debug.getuservalue` -- Get the value associated with a userdata.
 *   `debug.gethook` -- Get current hook settings of a thread.
 *   `debug.getinfo` -- Get general information about a function.
 *   `debug.getlocal` -- Get name and value of a local variable.
 *   `debug.getmetatable` -- Get metatable for any Lua object.
 *   `debug.getregistry` -- Get reference to the Lua registry.
 *   `debug.getupvalue` -- Get name and value of a function's upvalue.
-*   `debug.setuservalue` -- Associate a value with a userdata.
+*   `debug.getuservalue` -- Get the value associated with a userdata.
 *   `debug.sethook` -- Register hook function for Lua code.
 *   `debug.setlocal` -- Set the value of a local variable.
 *   `debug.setmetatable` -- Set metatable on any Lua object.
 *   `debug.setupvalue` -- Set the value of an upvalue for a function.
+*   `debug.setuservalue` -- Associate a value with a userdata.
 *   `debug.traceback` -- Traceback generator for `xpcall`
 *   `debug.upvalueid` -- Uniquely identify an upvalue.
 *   `debug.upvaluejoin` -- Make upvalue of function refer to another.
@@ -668,6 +841,195 @@ if check( debug, "debug", 5.1 ) then
     debug.debug()
 ]=] .. debug.debug
   if A ~= debug.debug then debug.debug = A end
+end
+
+if check( debug, "getfenv", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                   The `debug.getfenv` Function                   ##
+
+    debug.getfenv( any ) ==> table/nil
+]=] .. debug.getfenv
+  if A ~= debug.getfenv then debug.getfenv = A end
+end
+
+if check( debug, "gethook", 5.1 ) then
+  A = annotate[=[
+##                   The `debug.gethook` Function                   ##
+
+    debug.gethook( [thread] ) ==> function, string, integer
+]=] .. debug.gethook
+  if A ~= debug.gethook then debug.gethook = A end
+end
+
+if check( debug, "getinfo", 5.1 ) then
+  A = annotate[=[
+##                   The `debug.getinfo` Function                   ##
+
+    debug.getinfo( [thread,] f [, what] ) ==> table/nil
+        f   : function/integer  -- a function or a stack level
+        what: string            -- what fields to request
+]=] .. debug.getinfo
+  if A ~= debug.getinfo then debug.getinfo = A end
+end
+
+if check( debug, "getlocal", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                   The `debug.getlocal` Function                  ##
+
+    debug.getlocal( [thread,] level, index ) ==> string, any
+                                             ==> nil
+        level: integer  -- a stack level
+        index: integer  -- index for the local at given stack level
+]=] .. debug.getlocal
+  if A ~= debug.getlocal then debug.getlocal = A end
+end
+
+if check( debug, "getlocal", 5.2 ) then
+  A = annotate[=[
+##                   The `debug.getlocal` Function                  ##
+
+    debug.getlocal( [thread,] f, index ) ==> string, any?
+                                         ==> nil
+        f    : function/integer  -- a function or a stack level
+        index: integer           -- index for local
+]=] .. debug.getlocal
+  if A ~= debug.getlocal then debug.getlocal = A end
+end
+
+if check( debug, "getmetatable", 5.1 ) then
+  A = annotate[=[
+##                 The `debug.getmetatable` Function                ##
+
+    debug.getmetatable( any ) ==> table/nil
+]=] .. debug.getmetatable
+  if A ~= debug.getmetatable then debug.getmetatable = A end
+end
+
+if check( debug, "getregistry", 5.1 ) then
+  A = annotate[=[
+##                 The `debug.getregistry` Function                 ##
+
+    debug.getregistry() ==> table
+]=] .. debug.getregistry
+  if A ~= debug.getregistry then debug.getregistry = A end
+end
+
+if check( debug, "getupvalue", 5.1 ) then
+  A = annotate[=[
+##                  The `debug.getupvalue` Function                 ##
+
+    debug.getupvalue( function, index ) ==> (string, any)?
+        index: integer  -- index of the function's upvalue
+]=] .. debug.getupvalue
+  if A ~= debug.getupvalue then debug.getupvalue = A end
+end
+
+if check( debug, "getuservalue", 5.2 ) then
+  A = annotate[=[
+##                 The `debug.getuservalue` Function                ##
+
+    debug.getuservalue( any ) ==> table/nil
+]=] .. debug.getuservalue
+  if A ~= debug.getuservalue then debug.getuservalue = A end
+end
+
+if check( debug, "setfenv", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                   The `debug.setfenv` Function                   ##
+
+    debug.setfenv( o, table ) ==> function/userdata
+        o: function/userdata
+]=] .. debug.setfenv
+  if A ~= debug.setfenv then debug.setfenv = A end
+end
+
+if check( debug, "sethook", 5.1 ) then
+  A = annotate[=[
+##                   The `debug.sethook` Function                   ##
+
+    debug.sethook( [thread,] hookf, mask [, count] )
+        hookf: function -- the hook function
+        mask : string   -- when to call the hook function
+        count: integer  -- number of instructions
+]=] .. debug.sethook
+  if A ~= debug.sethook then debug.sethook = A end
+end
+
+if check( debug, "setlocal", 5.1 ) then
+  A = annotate[=[
+##                   The `debug.setlocal` Function                  ##
+
+    debug.setlocal( [thread,] level, index, value ) ==> string/nil
+        level: integer  -- a stack level
+        index: integer  -- index of the function's local
+        value: any      -- value to set the local to
+]=] .. debug.setlocal
+  if A ~= debug.setlocal then debug.setlocal = A end
+end
+
+if check( debug, "setmetatable", 5.1 ) then
+  A = annotate[=[
+##                 The `debug.setmetatable` Function                ##
+
+    debug.setmetatable( any, t ) ==> boolean
+        t: table/nil  -- the metatable to set
+]=] .. debug.setmetatable
+  if A ~= debug.setmetatable then debug.setmetatable = A end
+end
+
+if check( debug, "setupvalue", 5.1 ) then
+  A = annotate[=[
+##                  The `debug.setupvalue` Function                 ##
+
+    debug.setupvalue( function, index, value ) ==> string?
+        index: integer  -- index of the upvalue to set
+        value: any      -- value to set the upvalue to
+]=] .. debug.setupvalue
+  if A ~= debug.setupvalue then debug.setupvalue = A end
+end
+
+if check( debug, "setuservalue", 5.2 ) then
+  A = annotate[=[
+##                 The `debug.setuservalue` Function                ##
+
+    debug.setuservalue( userdata [, value] ) ==> userdata
+        value: table/nil  -- the uservalue to set
+]=] .. debug.setuservalue
+  if A ~= debug.setuservalue then debug.setuservalue = A end
+end
+
+if check( debug, "traceback", 5.1 ) then
+  A = annotate[=[
+##                  The ´debug.traceback` Function                  ##
+
+    debug.traceback( [thread,] [message [, level]] ) ==> string
+        message: string   -- prefix for stack trace
+        level  : integer  -- stack level where to start stack trace
+]=] .. debug.traceback
+  if A ~= debug.traceback then debug.traceback = A end
+end
+
+if check( debug, "upvalueid", 5.2 ) then
+  A = annotate[=[
+##                  The `debug.upvalueid` Function                  ##
+
+    debug.upvalueid( function, index ) ==> userdata
+        index: integer  -- index of the upvalue to query
+]=] .. debug.upvalueid
+  if A ~= debug.upvalueid then debug.upvalueid = A end
+end
+
+if check( debug, "upvaluejoin", 5.2 ) then
+  A = annotate[=[
+##                 The `debug.upvaluejoin` Function                 ##
+
+    debug.upvaluejoin( f1, n1, f2, n2 )
+        f1: function  -- target closure
+        n1: integer   -- index of upvalue to set
+        f2: function  -- source closure
+        n2: integer   -- index of upvalue used as source
+]=] .. debug.upvaluejoin
+  if A ~= debug.upvaluejoin then debug.upvaluejoin = A end
 end
 
 ----------------------------------------------------------------------
@@ -711,7 +1073,8 @@ if check( io, "close", V >= 5.1 and V < 5.2 ) then
   A = annotate[=[
 ##                      The `io.close` Function                     ##
 
-    io.close( [file] )
+    io.close( [file] ) ==> boolean               -- on success
+                       ==> nil, string, integer  -- in case of error
 ]=] .. io.close
   if A ~= io.close then io.close = A end
 end
@@ -720,7 +1083,8 @@ if check( io, "close", 5.2 ) then
   A = annotate[=[
 ##                      The `io.close` Function                     ##
 
-    io.close( [file] ) ==> (boolean/nil, string, integer)?
+    io.close( [file] ) ==> boolean, (string, integer)?  -- on success
+                       ==> nil, string, integer         -- on error
 ]=] .. io.close
   if A ~= io.close then io.close = A end
 end
@@ -729,9 +1093,74 @@ if check( io, "flush", 5.1 ) then
   A = annotate[=[
 ##                      The `io.flush` Function                     ##
 
-    io.flush()
+    io.flush() ==> boolean               -- on success
+               ==> nil, string, integer  -- in case of error
 ]=] .. io.flush
   if A ~= io.flush then io.flush = A end
+end
+
+if check( io, "input", 5.1 ) then
+  A = annotate[=[
+##                      The `io.input` Function                     ##
+
+    io.input( [f] ) ==> file?
+        f: file/string  -- a file or file name
+]=] .. io.input
+  if A ~= io.input then io.input = A end
+end
+
+if check( io, "lines", 5.1 ) then
+  A = annotate[=[
+##                      The `io.lines` Function                     ##
+
+    io.lines( [filename] ) ==> function, (any, any?)?
+        filename: string  -- name of file to read
+]=] .. io.lines
+  if A ~= io.lines then io.lines = A end
+end
+
+if check( io, "open", 5.1 ) then
+  A = annotate[=[
+##                      The `io.open` Function                      ##
+
+    io.open( filename [, mode] ) ==> file                -- on success
+                                 ==> nil, string, integer  -- on error
+        filename: string  -- name of the file to open
+        mode    : string  -- open for reading/writing?, default is "r"
+]=] .. io.open
+  if A ~= io.open then io.open = A end
+end
+
+if check( io, "output", 5.1 ) then
+  A = annotate[=[
+##                     The `io.output` Function                     ##
+
+    io.output( [f] ) ==> file?
+        f: file/string  -- a file or file name
+]=] .. io.output
+  if A ~= io.output then io.output = A end
+end
+
+if check( io, "popen", 5.1 ) then
+  A = annotate[=[
+##                      The `io.popen` Function                     ##
+
+    io.popen( prog [, mode] ) ==> file                  -- on success
+                              ==> nil, string, integer  -- on error
+        prog: string  -- the command line of the program to run
+        mode: string  -- read output from command or write intput
+]=] .. io.popen
+  if A ~= io.popen then io.popen = A end
+end
+
+if check( io, "read", 5.1 ) then
+  A = annotate[=[
+##                      The `io.read` Function                      ##
+
+    io.read( ... ) ==> (string/number/nil)*
+        ...: string/number  -- what to read from io.stdin()
+]=] .. io.read
+  if A ~= io.read then io.read = A end
 end
 
 if check( io, "stderr", 5.1 ) then
@@ -799,6 +1228,36 @@ output file object.)
   assert( A == io.stdout, "io.stdout modified by annotate plugin" )
 end
 
+if check( io, "tmpfile", 5.1 ) then
+  A = annotate[=[
+##                     The `io.tmpfile` Function                    ##
+
+    io.tmpfile() ==> file                  -- on success
+                 ==> nil, string, integer  -- in case of error
+]=] .. io.tmpfile
+  if A ~= io.tmpfile then io.tmpfile = A end
+end
+
+if check( io, "type", 5.1 ) then
+  A = annotate[=[
+##                      The `io.type` Function                      ##
+
+    io.type( any ) ==> string/nil
+]=] .. io.type
+  if A ~= io.type then io.type = A end
+end
+
+if check( io, "write", 5.1 ) then
+  A = annotate[=[
+##                      The `io.write` Function                     ##
+
+    io.write( ... ) ==> boolean               -- on success
+                    ==> nil, string, integer  -- in case of error
+        ...: (string/number)*  -- values to write to io.output()
+]=] .. io.write
+  if A ~= io.write then io.write = A end
+end
+
 -- get access to file methods
 local file
 if type( debug ) == "table" and type( io ) == "table" then
@@ -818,7 +1277,9 @@ if check( file, "close", V >= 5.1 and V < 5.2 ) then
     A = annotate[=[
 ##                     The `file:close()` Method                    ##
 
-    file:close()
+    file:close() ==> boolean               -- on success
+                 ==> nil, string, integer  -- in case of error
+        self: file
 ]=] .. file.close
     if A ~= file.close then file.close = A end
   end
@@ -829,7 +1290,9 @@ if check( file, "close", 5.2 ) then
     A = annotate[=[
 ##                     The `file:close()` Method                    ##
 
-    file:close() ==> (boolean/nil, string, integer)?
+    file:close() ==> boolean, (string, integer)?  -- on success
+                 ==> nil, string, integer         -- in case of error
+        self: file
 ]=] .. file.close
     if A ~= file.close then file.close = A end
   end
@@ -840,10 +1303,71 @@ if check( file, "flush", 5.1 ) then
     A = annotate[=[
 ##                     The `file:flush()` Method                    ##
 
-    file:flush()
+    file:flush() ==> boolean               -- on success
+                 ==> nil, string, integer  -- in case of error
+        self: file
 ]=] .. file.flush
     if A ~= file.flush then file.flush = A end
   end
+end
+
+if check( file, "lines", 5.1 ) then
+  A = annotate[=[
+##                     The `file:lines()` Method                    ##
+
+    file:lines() ==> function, (any, any?)?
+        self: file
+]=] .. file.lines
+  if A ~= file.lines then file.lines = A end
+end
+
+if check( file, "read", 5.1 ) then
+  A = annotate[=[
+##                     The `file:read()` Method                     ##
+
+    file:read( ... ) ==> (string/number/nil)*
+        self: file
+        ... : string/number  -- what to read from the file
+]=] .. file.read
+  if A ~= file.read then file.read = A end
+end
+
+if check( file, "seek", 5.1 ) then
+  A = annotate[=[
+##                     The `file:seek()` Method                     ##
+
+    file:seek( [whence] [, offset] ) ==> integer
+                                     ==> nil, string, integer
+        self  : file
+        whence: string   -- where to count the offset from
+        offset: integer  -- where to move the file pointer to
+]=] .. file.seek
+  if A ~= file.seek then file.seek = A end
+end
+
+if check( file, "setvbuf", 5.1 ) then
+  A = annotate[=[
+##                    The `file:setvbuf()` Method                   ##
+
+    file:setvbuf( mode [, size] ) ==> boolean
+                                  ==> nil, string, integer
+        self: file
+        mode: string   -- buffer strategy ("no", "full", or "line" )
+        size: integer  -- size of the buffer in bytes
+]=] .. file.setvbuf
+  if A ~= file.setvbuf then file.setvbuf = A end
+end
+
+if check( file, "write", 5.1 ) then
+  A = annotate[=[
+##                     The `file:write()` Method                    ##
+
+    file:write( ... ) ==> boolean               -- on success
+                      ==> nil, string, integer  -- in case of error
+        self: file
+        ... : (string/number)*  -- values to write to the file
+]=] .. file.write
+  if A ~= file.write then file.write = A end
 end
 
 ----------------------------------------------------------------------
@@ -931,8 +1455,369 @@ if check( math, "abs", 5.1 ) then
 ##                      The `math.abs` Function                     ##
 
     math.abs( number ) ==> number
+
+###                            Examples                            ###
+
+    > =math.abs( 1 ), math.abs( -1 )
+    1       1
+    > =math.abs( 1.5 ), math.abs( -1.5 )
+    1.5     1.5
 ]=] .. math.abs
   if A ~= math.abs then math.abs = A end
+end
+
+if check( math, "acos", 5.1 ) then
+  A = annotate[=[
+##                     The `math.acos` Function                     ##
+
+    math.acos( number ) ==> number
+]=] .. math.acos
+  if A ~= math.acos then math.acos = A end
+end
+
+if check( math, "asin", 5.1 ) then
+  A = annotate[=[
+##                     The `math.asin` Function                     ##
+
+    math.asin( number ) ==> number
+]=] .. math.asin
+  if A ~= math.asin then math.asin = A end
+end
+
+if check( math, "atan", 5.1 ) then
+  A = annotate[=[
+##                     The `math.atan` Function                     ##
+
+    math.atan( number ) ==> number
+]=] .. math.atan
+  if A ~= math.atan then math.atan = A end
+end
+
+if check( math, "atan2", 5.1 ) then
+  A = annotate[=[
+##                     The `math.atan2` Function                    ##
+
+    math.atan2( x, y ) ==> number
+        x: number
+        y: number
+]=] .. math.atan2
+  if A ~= math.atan2 then math.atan2 = A end
+end
+
+if check( math, "ceil", 5.1 ) then
+  A = annotate[=[
+##                     The `math.ceil` Function                     ##
+
+    math.ceil( number ) ==> integer
+
+###                            Examples                            ###
+
+    > =math.ceil( 1.4 ), math.ceil( 1.6 )
+    2       2
+    > =math.ceil( -1.4 ), math.ceil( -1.6 )
+    -1      -1
+]=] .. math.ceil
+  if A ~= math.ceil then math.ceil = A end
+end
+
+if check( math, "cos", 5.1 ) then
+  A = annotate[=[
+##                      The `math.cos` Function                     ##
+
+    math.cos( number ) ==> number
+
+###                            Examples                            ###
+
+    > function feq( a, b ) return math.abs( a-b ) < 0.00001 end
+    > =feq( math.cos( 0 ), 1 )
+    true
+    > =feq( math.cos( math.pi ), -1 )
+    true
+    > =feq( math.cos( math.pi/2 ), 0 )
+    true
+]=] .. math.cos
+  if A ~= math.cos then math.cos = A end
+end
+
+if check( math, "cosh", 5.1 ) then
+  A = annotate[=[
+##                     The `math.cosh` Function                     ##
+
+    math.cosh( number ) ==> number
+]=] .. math.cosh
+  if A ~= math.cosh then math.cosh = A end
+end
+
+if check( math, "deg", 5.1 ) then
+  A = annotate[=[
+##                      The `math.deg` Function                     ##
+
+    math.deg( number ) ==> number
+
+###                            Examples                            ###
+
+    > function feq( a, b ) return math.abs( a-b ) < 0.00001 end
+    > =feq( math.deg( 0 ), 0 )
+    true
+    > =feq( math.deg( math.pi ), 180 )
+    true
+    > =feq( math.deg( 4*math.pi ), 720 )
+    true
+    > =feq( math.deg( -math.pi ), -180 )
+    true
+]=] .. math.deg
+  if A ~= math.deg then math.deg = A end
+end
+
+if check( math, "exp", 5.1 ) then
+  A = annotate[=[
+##                      The `math.exp` Function                     ##
+
+    math.exp( number ) ==> number
+
+###                            Examples                            ###
+
+    > function feq( a, b ) return math.abs( a-b ) < 0.00001 end
+    > =feq( math.exp( 0 ), 1 )
+    true
+    > =feq( math.exp( 1 ), 2.718281828459 )
+    true
+]=] .. math.exp
+  if A ~= math.exp then math.exp = A end
+end
+
+if check( math, "floor", 5.1 ) then
+  A = annotate[=[
+##                     The `math.floor` Function                    ##
+
+    math.floor( number ) ==> integer
+
+###                            Examples                            ###
+
+    > =math.floor( 1.4 ), math.floor( 1.6 )
+    1       1
+    > =math.floor( -1.4 ), math.floor( -1.6 )
+    -2      -2
+]=] .. math.floor
+  if A ~= math.floor then math.floor = A end
+end
+
+if check( math, "fmod", 5.1 ) then
+  A = annotate[=[
+##                     The `math.fmod` Function                     ##
+
+    math.fmod( x, y ) ==> number
+        x: number
+        y: number
+]=] .. math.fmod
+  if A ~= math.fmod then math.fmod = A end
+end
+
+if check( math, "frexp", 5.1 ) then
+  A = annotate[=[
+##                     The `math.frexp` Function                    ##
+
+    math.frexp( number ) ==> number, integer
+]=] .. math.frexp
+  if A ~= math.frexp then math.frexp = A end
+end
+
+if check( math, "ldexp", 5.1 ) then
+  A = annotate[=[
+##                     The `math.ldexp` Function                    ##
+
+    math.ldexp( m, e ) ==> number
+        m: number
+        e: integer
+]=] .. math.ldexp
+  if A ~= math.ldexp then math.ldexp = A end
+end
+
+if check( math, "log", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                      The `math.log` Function                     ##
+
+    math.log( number ) ==> number
+]=] .. math.log
+  if A ~= math.log then math.log = A end
+end
+
+if check( math, "log", 5.2 ) then
+  A = annotate[=[
+##                      The `math.log` Function                     ##
+
+    math.log( x [, base] ) ==> number
+        x   : number
+        base: integer  -- defaults to e
+]=] .. math.log
+  if A ~= math.log then math.log = A end
+end
+
+if check( math, "log10", V >= 5.1 and V < 5.3 ) then
+  A = annotate[=[
+##                     The `math.log10` Function                    ##
+
+    math.log10( number ) ==> number
+]=] .. math.log10
+  if A ~= math.log10 then math.log10 = A end
+end
+
+if check( math, "max", 5.1 ) then
+  A = annotate[=[
+##                      The `math.max` Function                     ##
+
+    math.max( number, ... ) ==> number
+
+###                            Examples                            ###
+
+    > =math.max( 12, 35, -10, 69.5, 22, -1 )
+    69.5
+]=] .. math.max
+  if A ~= math.max then math.max = A end
+end
+
+if check( math, "min", 5.1 ) then
+  A = annotate[=[
+##                      The `math.min` Function                     ##
+
+    math.min( number, ... ) ==> number
+
+###                            Examples                            ###
+
+    > =math.min( 12, 35, -10, 69.5, 22, -1 )
+    -10
+]=] .. math.min
+  if A ~= math.min then math.min = A end
+end
+
+if check( math, "modf", 5.1 ) then
+  A = annotate[=[
+##                     The `math.modf` Function                     ##
+
+    math.modf( number ) ==> integer, number
+]=] .. math.modf
+  if A ~= math.modf then math.modf = A end
+end
+
+if check( math, "pow", 5.1 ) then
+  A = annotate[=[
+##                      The `math.pow` Function                     ##
+
+    math.pow( x, y ) ==> number
+        x: number
+        y: number
+
+###                            Examples                            ###
+
+    > =math.pow( 2, 0 ), math.pow( 2, 1 ), math.pow( 2, 2 )
+    1       2       4
+    > =math.pow( 2, 3 ), math.pow( 16, 0.5 )
+    8       4
+]=] .. math.pow
+  if A ~= math.pow then math.pow = A end
+end
+
+if check( math, "rad", 5.1 ) then
+  A = annotate[=[
+##                      The `math.rad` Function                     ##
+
+    math.rad( number ) ==> number
+
+###                            Examples                            ###
+
+    > function feq( a, b ) return math.abs( a-b ) < 0.00001 end
+    > =feq( math.rad( 0 ), 0 )
+    true
+    > =feq( math.rad( 180 ), math.pi )
+    true
+    > =feq( math.rad( 720 ), 4*math.pi )
+    true
+    > =feq( math.rad( -180 ), -math.pi )
+    true
+]=] .. math.rad
+  if A ~= math.rad then math.rad = A end
+end
+
+if check( math, "random", 5.1 ) then
+  A = annotate[=[
+##                    The `math.random` Function                    ##
+
+    math.random( [m [, n]] ) ==> number
+]=] .. math.random
+  if A ~= math.random then math.random = A end
+end
+
+if check( math, "randomseed", 5.1 ) then
+  A = annotate[=[
+##                  The `math.randomseed` Function                  ##
+
+    math.randomseed( number )
+]=] .. math.randomseed
+  if A ~= math.randomseed then math.randomseed = A end
+end
+
+if check( math, "sin", 5.1 ) then
+  A = annotate[=[
+##                      The `math.sin` Function                     ##
+
+    math.sin( number ) ==> number
+
+###                            Examples                            ###
+
+    > function feq( a, b ) return math.abs( a-b ) < 0.00001 end
+    > =feq( math.sin( 0 ), 0 )
+    true
+    > =feq( math.sin( math.pi ), 0 )
+    true
+    > =feq( math.sin( math.pi/2 ), 1 )
+    true
+
+]=] .. math.sin
+  if A ~= math.sin then math.sin = A end
+end
+
+if check( math, "sinh", 5.1 ) then
+  A = annotate[=[
+##                     The `math.sinh` Function                     ##
+
+    math.sinh( number ) ==> number
+]=] .. math.sinh
+  if A ~= math.sinh then math.sinh = A end
+end
+
+if check( math, "sqrt", 5.1 ) then
+  A = annotate[=[
+##                     The `math.sqrt` Function                     ##
+
+    math.sqrt( number ) ==> number
+
+###                            Examples                            ###
+
+    > =math.sqrt( 4 ), math.sqrt( 9 ), math.sqrt( 16 )
+    2       3       4
+    > function feq( a, b ) return math.abs( a-b ) < 0.00001 end
+    > =feq( math.sqrt( 2 ), 1.4142135623731 )
+    true
+]=] .. math.sqrt
+  if A ~= math.sqrt then math.sqrt = A end
+end
+
+if check( math, "tan", 5.1 ) then
+  A = annotate[=[
+##                      The `math.tan` Function                     ##
+
+    math.tan( number ) ==> number
+]=] .. math.tan
+  if A ~= math.tan then math.tan = A end
+end
+
+if check( math, "tanh", 5.1 ) then
+  A = annotate[=[
+##                     The `math.tanh` Function                     ##
+
+    math.tanh( number ) ==> number
+]=] .. math.tanh
+  if A ~= math.tanh then math.tanh = A end
 end
 
 ----------------------------------------------------------------------
@@ -966,6 +1851,132 @@ if check( os, "clock", 5.1 ) then
     os.clock() ==> number
 ]=] .. os.clock
   if A ~= os.clock then os.clock = A end
+end
+
+if check( os, "date", 5.1 ) then
+  A = annotate[=[
+##                      The `os.date` Function                      ##
+
+    os.date( [format [, time]] ) ==> string/table/nil
+        format: string  -- format to use for output, defaults to "%c"
+        time  : number  -- time value to use, defaults to now
+]=] .. os.date
+  if A ~= os.date then os.date = A end
+end
+
+if check( os, "difftime", 5.1 ) then
+  A = annotate[=[
+##                    The `os.difftime` Function                    ##
+
+    os.difftime( t1 [, t2] ) ==> number
+        t1: number  -- a time value
+        t2: number  -- another time value, defaults to 0
+]=] .. os.difftime
+  if A ~= os.difftime then os.difftime = A end
+end
+
+if check( os, "execute", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                     The `os.execute` Function                    ##
+
+    os.execute( [command] ) ==> integer
+        command: string  -- the command line to be passed to the shell
+]=] .. os.execute
+  if A ~= os.execute then os.execute = A end
+end
+
+if check( os, "execute", 5.2 ) then
+  A = annotate[=[
+##                     The `os.execute` Function                    ##
+
+    os.execute( [command] ) ==> boolean/nil, string, integer
+                            ==> boolean
+        command: string  -- the command line to be passed to the shell
+]=] .. os.execute
+  if A ~= os.execute then os.execute = A end
+end
+
+if check( os, "exit", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                      The `os.exit` Function                      ##
+
+    os.exit( [code] )
+        code: integer  -- exit code to pass to exit C function
+]=] .. os.exit
+  if A ~= os.exit then os.exit = A end
+end
+
+if check( os, "exit", 5.2 ) then
+  A = annotate[=[
+##                      The `os.exit` Function                      ##
+
+    os.exit( [code [, close]] )
+        code : boolean/integer  -- exit code for exit C function
+        close: boolean          -- close Lua state before exit?
+]=] .. os.exit
+  if A ~= os.exit then os.exit = A end
+end
+
+if check( os, "getenv", 5.1 ) then
+  A = annotate[=[
+##                     The `os.getenv` Function                     ##
+
+    os.getenv( envname ) ==> string/nil
+        envname: string  -- name of the environment variable
+]=] .. os.getenv
+  if A ~= os.getenv then os.getenv = A end
+end
+
+if check( os, "remove", 5.1 ) then
+  A = annotate[=[
+##                     The `os.remove` Function                     ##
+
+    os.remove( filename ) ==> boolean               -- on success
+                          ==> nil, string, integer  -- on error
+        filename: string  -- name of the file to remove
+]=] .. os.remove
+  if A ~= os.remove then os.remove = A end
+end
+
+if check( os, "rename", 5.1 ) then
+  A = annotate[=[
+##                     The `os.rename` Function                     ##
+
+    os.rename( oldname, newname ) ==> boolean            -- on success
+                                  ==> nil, string, integer -- on error
+        oldname: string  -- name of the file to rename
+        newname: string  -- new file name
+]=] .. os.rename
+  if A ~= os.rename then os.rename = A end
+end
+
+if check( os, "setlocale", 5.1 ) then
+  A = annotate[=[
+##                    The `os.setlocale` Function                   ##
+
+    os.setlocale( locale [, category] ) ==> string/nil
+        locale  : string  -- name of the new locale to set
+        category: string  -- category to change the locale for
+]=] .. os.setlocale
+  if A ~= os.setlocale then os.setlocale = A end
+end
+
+if check( os, "time", 5.1 ) then
+  A = annotate[=[
+##                      The `os.time` Function                      ##
+
+    os.time( [table] ) ==> number/nil
+]=] .. os.time
+  if A ~= os.time then os.time = A end
+end
+
+if check( os, "tmpname", 5.1 ) then
+  A = annotate[=[
+##                     The `os.tmpname` Function                    ##
+
+    os.tmpname() ==> string
+]=] .. os.tmpname
+  if A ~= os.tmpname then os.tmpname = A end
 end
 
 ----------------------------------------------------------------------
@@ -1161,7 +2172,7 @@ directory separator listed in `package.config` (and defined in
   if A ~= package.searchpath then package.searchpath = A end
 end
 
-if check( package, "seeall", V >= 5.1 and V < 5.2 ) then
+if check( package, "seeall", V >= 5.1 and V < 5.3 ) then
   A = annotate[=[
 ##                   The `package.seeall` Function                  ##
 
@@ -1208,11 +2219,156 @@ if check( string, "byte", 5.1 ) then
   A = annotate[=[
 ##                    The `string.byte` Function                    ##
 
-    string.byte( string [, i [, j]] ) ==> integer*
+    string.byte( s [, i [, j]] ) ==> integer*
+        s: string
         i: integer  -- starting index for sub-string, defaults to 1
         j: integer  -- end index for sub-string, defaults to #string
 ]=] .. string.byte
   if A ~= string.byte then string.byte = A end
+end
+
+if check( string, "char", 5.1 ) then
+  A = annotate[=[
+##                    The `string.char` Function                    ##
+
+    string.char( ... ) ==> string
+        ...: integer*  -- numerical character codes
+]=] .. string.char
+  if A ~= string.char then string.char = A end
+end
+
+if check( string, "dump", 5.1 ) then
+  A = annotate[=[
+##                    The `string.dump` Function                    ##
+
+    string.dump( function ) ==> string
+]=] .. string.dump
+  if A ~= string.dump then string.dump = A end
+end
+
+if check( string, "find", 5.1 ) then
+  A = annotate[=[
+##                    The `string.find` Function                    ##
+
+    string.find( s, pattern [, init [, plain]] )
+            ==> integer, integer, string*  -- pattern matched
+            ==> nil                        -- no match found
+        s      : string
+        pattern: string   -- a pattern to find in the given string
+        init   : integer  -- starting index, default 1
+        plain  : boolean  -- turn off magic characters in pattern
+]=] .. string.find
+  if A ~= string.find then string.find = A end
+end
+
+if check( string, "format", 5.1 ) then
+  A = annotate[=[
+##                   The `string.format` Function                   ##
+
+    string.format( fmt, ... ) ==> string
+        fmt: string  -- format string specifying types of arguments
+        ...: any*    -- arguments to insert into format string
+]=] .. string.format
+  if A ~= string.format then string.format = A end
+end
+
+if check( string, "gmatch", 5.1 ) then
+  A = annotate[=[
+##                   The `string.gmatch` Function                   ##
+
+    string.gmatch( s, pattern ) ==> function, (any, any?)?
+        s      : string
+        pattern: string  -- pattern to find in the string
+]=] .. string.gmatch
+  if A ~= string.gmatch then string.gmatch = A end
+end
+
+if check( string, "gsub", 5.1 ) then
+  A = annotate[=[
+##                    The `string.gsub` Function                    ##
+
+    string.gsub( s, pattern, repl [, n] ) ==> string, integer
+        s      : string
+        pattern: string                 -- the pattern to replace
+        repl   : string/table/function  -- replacement value
+        n      : integer                -- replace only n occurrences
+]=] .. string.gsub
+  if A ~= string.gsub then string.gsub = A end
+end
+
+if check( string, "len", 5.1 ) then
+  A = annotate[=[
+##                     The `string.len` Function                    ##
+
+    string.len( s ) ==> integer
+        s: string
+]=] .. string.len
+  if A ~= string.len then string.len = A end
+end
+
+if check( string, "lower", 5.1 ) then
+  A = annotate[=[
+##                    The `string.lower` Function                   ##
+
+    string.lower( s ) ==> string
+        s: string
+]=] .. string.lower
+  if A ~= string.lower then string.lower = A end
+end
+
+if check( string, "match", 5.1 ) then
+  A = annotate[=[
+##                    The `string.match` Function                   ##
+
+    string.match( s, pattern [, init] ) ==> string, string* -- ok
+                                        ==> nil            -- no match
+        s      : string
+        pattern: string   -- the pattern to find/match
+        init   : integer  -- where to start matching, default is 1
+]=] .. string.match
+  if A ~= string.match then string.match = A end
+end
+
+if check( string, "rep", 5.1 ) then
+  A = annotate[=[
+##                     The `string.rep` Function                    ##
+
+    string.rep( s, integer ) ==> string
+        s: string
+]=] .. string.rep
+  if A ~= string.rep then string.rep = A end
+end
+
+if check( string, "reverse", 5.1 ) then
+  A = annotate[=[
+##                   The `string.reverse` Function                  ##
+
+    string.reverse( s ) ==> string
+        s: string
+]=] .. string.reverse
+  if A ~= string.reverse then string.reverse = A end
+end
+
+if check( string, "sub", 5.1 ) then
+  A = annotate[=[
+##                     The `string.sub` Function                    ##
+
+    string.sub( s, i [, j] ) ==> string
+        s: string
+        i: integer  -- start index
+        j: integer  -- end index, defaults to #s
+]=] .. string.sub
+  if A ~= string.sub then string.sub = A end
+end
+
+if check( string, "upper", 5.1 ) then
+  A = annotate[=[
+##                    The `string.upper` Function                   ##
+
+    string.upper( s ) ==> string
+        s: string
+]=] .. string.upper
+  if A ~= string.upper then string.upper = A end
 end
 
 ----------------------------------------------------------------------
@@ -1309,11 +2465,12 @@ metamethods. The array must *not* contain holes!
   if A ~= table.insert then table.insert = A end
 end
 
-if check( table, "maxn", V >= 5.1 and V < 5.2 ) then
+if check( table, "maxn", V >= 5.1 and V < 5.3 ) then
   A = annotate[=[
 ##                     The `table.maxn` Function                    ##
 
-    table.maxn( table ) ==> number
+    table.maxn( t ) ==> number
+        t: table
 
 The `table.maxn` function traverses the whole table to look for the
 largest positive numeric key and returns it. If no such key is found,
