@@ -6,7 +6,7 @@
 
 <p><img src="annotate.png" alt="annotate Logo" /></p>
 
-<h1>annotate -- Annotations and Docstrings for Lua Values</h1><div class="toc"><a href="#Introduction" title="Introduction">Introduction</a> · <a href="#Basic_Usage" title="Basic Usage">Basic Usage</a> · <a href="#Reference" title="Reference">Reference</a> · <a href="#Changelog" title="Changelog">Changelog</a> · <a href="#Download" title="Download">Download</a> · <a href="#Installation" title="Installation">Installation</a> · <a href="#Contact" title="Contact">Contact</a> · <a href="#License" title="License">License</a></div>
+<h1>annotate -- Annotations and Docstrings for Lua Values</h1><div class="toc"><a href="#Introduction" title="Introduction">Introduction</a> · <a href="#Basic_Usage" title="Basic Usage">Basic Usage</a> · <a href="#The_annotate_Module" title="The annotate Module">The annotate Module</a> · <a href="#The_annotate.check_Module" title="The annotate.check Module">The annotate.check Module</a> · <a href="#The_annotate.help_Module" title="The annotate.help Module">The annotate.help Module</a> · <a href="#The_annotate.test_Module" title="The annotate.test Module">The annotate.test Module</a> · <a href="#Changelog" title="Changelog">Changelog</a> · <a href="#Download" title="Download">Download</a> · <a href="#Installation" title="Installation">Installation</a> · <a href="#Contact" title="Contact">Contact</a> · <a href="#License" title="License">License</a></div>
 
 <h2><a name="Introduction" id="Introduction"></a>Introduction</h2>
 
@@ -90,7 +90,7 @@ stack traceback:
 </code></pre>
 
 
-<h2><a name="Reference" id="Reference"></a>Reference</h2>
+<h2><a name="The_annotate_Module" id="The_annotate_Module"></a>The annotate Module</h2>
 
 <p>By itself the <code>annotate</code> module does nothing except providing syntax
 for associating a docstring with a Lua value. It does so using a
@@ -124,7 +124,7 @@ called is unspecified (and shouldn't matter anyway). Their return
 values are ignored.</p>
 
 
-<h3>The annotate.check Module</h3>
+<h2><a name="The_annotate.check_Module" id="The_annotate.check_Module"></a>The annotate.check Module</h2>
 
 <p>The <code>annotate.check</code> module registers itself with the <code>annotate</code>
 module when require'd (see above). For every function that gets
@@ -135,7 +135,7 @@ version. Various fields in the <code>annotate.check</code> module table can be
 used to fine-tune the type checking (see below).</p>
 
 
-<h4>Function Signature Syntax</h4>
+<h3>Function Signature Syntax</h3>
 
 <p>The <code>annotate.check</code> module scans paragraphs (sequences of characters
 delimited by <code>\n\n</code>) in the docstring and takes the first that looks
@@ -214,7 +214,7 @@ single line comments at all places where whitespace is allowed.</p>
     specifications (see above). Specifying a type for the implicit
     <code>self</code> parameter in methods is optional, the default is <code>object</code>
     which matches tables and userdata.</p></li>
-</ul><h5>Examples</h5>
+</ul><h4>Examples</h4>
 
 <pre><code class="no-highlight">pcall( f [, arg1, ...] ) ==&gt; boolean, any*
     f   : function  -- the function to call in protected mode
@@ -265,7 +265,7 @@ mod.obj:method( [a [, b] [, c],] [d,] ... )
 </code></pre>
 
 
-<h4>Predefined Type Checking Functions</h4>
+<h3>Predefined Type Checking Functions</h3>
 
 <p>The table <code>check.types</code> (where <code>check</code> is the result of the
 <code>require</code>-call) comes with some predefined type checking functions.
@@ -322,7 +322,7 @@ functions are available:</p>
     <li><p><code>pattern</code></p>
     
     <p>Matches an <a href="http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html">LPeg</a> pattern. Requires <code>LPeg.type</code>.</p></li>
-</ul><h4>Tuning the Type Checker</h4>
+</ul><h3>Tuning the Type Checker</h3>
 
 <p>Checking for basic Lua types already helps, but typically support for
 application specific data types is needed. To register a new type
@@ -370,32 +370,45 @@ signature. You can change that by providing a custom error function:</p>
 </code></pre>
 
 
-<h3>The annotate.help Module</h3>
+<h2><a name="The_annotate.help_Module" id="The_annotate.help_Module"></a>The annotate.help Module</h2>
 
 <p>The <code>annotate.help</code> module registers itself with the <code>annotate</code>
 module when require'd to provide interactive help for all Lua values
 with an annotation. It can also wrap other help modules (like e.g.
 <a href="https://github.com/dlaurie/lua-ihelp/">ihelp</a>) to delegate help requests for values <em>not</em> having a
-docstring.</p>
+docstring. Assuming <code>help</code> is the return value of the <code>require</code>-call:</p>
 
-<pre><code>&gt; help = require( "annotate.help" )
-&gt; help( somefunc )
-output of somefunc's docstring ...
-</code></pre>
+<ul><li><p><code>help( value )</code></p>
+    
+    <p>Prints the annotation for the given value, or a short notice that
+    no docstring could be found for that value.</p></li>
+    <li><p><code>help:search( pattern [, highlighter] )</code> or
+    <code>help.search( pattern [, highlighter] )</code></p>
+    
+    <p>Prints all annotations that match the given pattern, or a short
+    notice that no matching docstring could be found. If <code>highlighter</code>
+    is a function value, it is used in a <code>string.gsub</code> call to replace
+    all occurrences of the pattern with a highlighted value.</p></li>
+    <li><p><code>help:wrap( help_func )</code> or <code>help.wrap( help_func )</code></p>
+    
+    <p>Returns a function that first looks for an annotation for a given
+    value and prints it if it exists, or falls back to the supplied
+    <code>help_func</code> function.</p></li>
+    <li><p><code>help:lookup( value )</code> or <code>help.lookup( value )</code></p>
+    
+    <p>Tries to find a docstring for the given value and returns it.
+    Returns <code>nil</code> if no docstring can be found.</p></li>
+    <li><p><code>help.ansi_highlight</code></p>
+    
+    <p>A highlighter function for <code>search</code> using ANSI escape sequences
+    for colorized output.</p></li>
+</ul><p>If the argument to the <code>help</code> module (or to the <code>lookup</code> function) is
+a string, <code>annotate.help</code> tries to require the string (and suitable
+substrings) looking for a Lua value with an annotation using the
+string as a path.</p>
 
-<p>or</p>
 
-<pre><code>&gt; help = require( "annotate.help" ):wrap( help_func )
-&gt; help( someotherfunc )
-</code></pre>
-
-
-<p>If the argument to the <code>help</code> module is a string, <code>annotate.help</code>
-tries to require the string (and suitable substrings) looking for a
-Lua value with an annotation using the string as a path.</p>
-
-
-<h3>The annotate.test Module</h3>
+<h2><a name="The_annotate.test_Module" id="The_annotate.test_Module"></a>The annotate.test Module</h2>
 
 <p>The <code>annotate.test</code> module is a simple unit testing module inspired by
 Python's <a href="http://en.wikipedia.org/wiki/Doctest">doctest</a>. The idea is to provide code examples in the
@@ -425,13 +438,13 @@ tests, and only use this module to make sure the examples in the
 documentation stay correct.</p>
 
 
-<h4>Test Syntax</h4>
+<h3>Test Syntax</h3>
 
 <p>The beginning of the test code section is denoted by a simple header
 or a markdown header (in atx-style format).</p>
 
 <ul><li><p>Simple Header:</p>
-    <ul><li>The word <code>example</code> (<code>examples</code>) or <code>test</code> (<code>tests</code>) at the
+    <ul><li>One of <code>example</code>, <code>examples</code>, <code>test</code>, or <code>tests</code> at the
         beginning of a paragraph, optionally followed by a colon
         (<code>:</code>), and zero or more empty lines (containing only
         whitespace). </li>
@@ -439,8 +452,8 @@ or a markdown header (in atx-style format).</p>
         matter.</li>
     </ul></li>
     <li><p>Markdown Header:</p>
-    <ul><li>One or more <code>#</code> followed by optional whitespace, the word
-        <code>example</code> (<code>examples</code>) or <code>test</code> (<code>tests</code>) (again case doesn't
+    <ul><li>One or more <code>#</code> followed by optional whitespace, one of
+        <code>example</code>, <code>examples</code>, <code>test</code>, or <code>tests</code> (again case doesn't
         matter), and zero or more empty lines (containing only
         whitespace).</li>
         <li>The markdown header line can optionally be "closed" by
@@ -471,7 +484,7 @@ The test/example section ends with the first non-empty line that is
 not indented at least 4 spaces.</p>
 
 
-<h5>Examples</h5>
+<h4>Examples</h4>
 
 <pre><code>local annotate = require( "annotate" )
 local test = require( "annotate.test" )
@@ -516,7 +529,7 @@ test() -- run the tests
 
 <h2><a name="Changelog" id="Changelog"></a>Changelog</h2>
 
-<ul><li>Version 0.2 [2013/05/08]
+<ul><li>Version 0.2 [2013/05/xx]
     <ul><li>added plugin for simple interactive help</li>
         <li>added plugin for running test code within annotations</li>
     </ul></li>
