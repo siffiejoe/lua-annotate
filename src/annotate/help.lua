@@ -2608,20 +2608,37 @@ end
 
 ----------------------------------------------------------------------
 
--- reenable type checking
-if ARG_C ~= false or RET_C ~= false then
-  local c = package.loaded[ "annotate.check" ]
-  if ARG_C ~= false then
-    c.arguments = ARG_C
-  end
-  if RET_C ~= false then
-    c.return_values = RET_C
-  end
-end
+local M = annotate[=[
+##                    The `annotate.help` Module                    ##
 
-----------------------------------------------------------------------
+When require'd this module returns a func table for querying the
+annotations/docstrings of Lua values.
 
-local M = {}
+    annotate.help( v )
+        v: any  -- value to print help for
+
+If the given value has a docstring (which has been defined after this
+module was require'd), the func table prints the annotation using the
+standard `print` function (to the standard output). Otherwise a small
+notice/error message is printed. If the value is a string and no
+annotation can be found directly for it, the string is interpreted as
+a combination of a module name and references in that module, so e.g.
+`annotate.help( "a.b.c.d" )` will look for annotations for the
+following values (in this order):
+
+1.  `"a.b.c.d"`
+2.  `require( "a.b.c.d" )`
+3.  `require( "a.b.c" ).d`
+4.  `require( "a.b" ).c.d`
+5.  `require( "a" ).b.c.d`
+
+The `annotate.help` module table also contains the following fields:
+
+*   `annotate.help.wrap` -- Use another help function as fallback.
+*   `annotate.help.lookup` -- Lookup the annotation without printing.
+*   `annotate.help.search` -- Print any annotation matching a pattern.
+*   `annotate.help.ansi_highlight` -- Highlight search results.
+]=] .. {}
 
 
 local function trim( s )
@@ -2714,17 +2731,81 @@ end
 
 local M_meta = {
   __index = {
-    wrap = wrap,
-    lookup = lookup,
-    search = search,
-    ansi_highlight = ansi_highlight,
+    wrap = annotate[=[
+##                 The `annotate.help.wrap` Function                ##
+
+    annotate.help.wrap( [self,] function ) ==> function
+        self: table   -- the annotate.help table itself
+
+This function builds a new closure that first tries to find an
+annotation/docstring for a given Lua value and then falls back to the
+given function argument to provide interactive help for the value.
+This is useful if not all of your functions follow a single approach
+for online documentation.
+]=] .. wrap,
+    lookup = annotate[=[
+##                The `annotate.help.lookup` Function               ##
+
+    annotate.help.lookup( [self,] v ) ==> string/nil
+        self: table   -- the annotate.help table itself
+        v   : any     -- the value to lookup the annotation for
+
+This function works the same way as the `annotate.help` func table
+itself, but it just returns the docstring (or nil) instead of printing
+it.
+
+###                             Example                            ###
+
+    > help = require( "annotate.help" )
+    > =help:lookup( help.lookup )
+    ## The `annotate.help.lookup` Function ...
+]=] .. lookup,
+    search = annotate[=[
+##                The `annotate.help.search` Function               ##
+
+    annotate.help.search( [self,] pattern [, high] )
+        self   : table     -- the annotate.help table itself
+        pattern: string    -- a pattern describing what to look for
+        high   : function  -- a function used for highlighting
+
+This function prints all docstrings that contain a substring matching
+the given Lua string pattern (or a small notice/error message). If
+`high` is a function, it is passed with the pattern to `string.gsub`
+to highlight the substring(s) that matched the pattern. One example
+of such a highlighter function is `annotate.help.ansi_highlight` which
+uses ANSI color escape sequences.
+]=] .. search,
+    ansi_highlight = annotate[=[
+##            The `annotate.help.ansi_highlight` Function           ##
+
+    annotate.help.ansi_highlight( string ) ==> string
+
+If passed to `annotate.help.search`, this function adds ANSI color
+escape sequences to the substrings matching the pattern in the search
+so that those substrings have a different color when printed to a
+suitable terminal/console.
+]=] .. ansi_highlight,
   },
   __call = function( _, topic )
     print( lookup( M, topic ) or
            "no help available for "..tostring( topic ) )
   end,
 }
-
 setmetatable( M, M_meta )
+
+----------------------------------------------------------------------
+
+-- reenable type checking
+if ARG_C ~= false or RET_C ~= false then
+  local c = package.loaded[ "annotate.check" ]
+  if ARG_C ~= false then
+    c.arguments = ARG_C
+  end
+  if RET_C ~= false then
+    c.return_values = RET_C
+  end
+end
+
+-- return module table
 return M
 
