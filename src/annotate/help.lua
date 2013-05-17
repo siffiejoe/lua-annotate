@@ -2222,7 +2222,24 @@ if check( string, "byte", 5.1 ) then
     string.byte( s [, i [, j]] ) ==> integer*
         s: string
         i: integer  -- starting index for sub-string, defaults to 1
-        j: integer  -- end index for sub-string, defaults to #string
+        j: integer  -- end index for sub-string, defaults to i
+
+The `string.byte` function converts the bytes of (a sub range of) a
+string into their internal numerical codes and returns them. Those
+numerical codes are not necessarily portable.
+
+###                            Examples                            ###
+
+    > s = string.char( 65, 66, 67, 68, 69 )
+    > =type( s ), #s
+    string  5
+    > =string.byte( s )
+    65
+    > =string.byte( s, 2 )
+    66
+    > =string.byte( s, 2, 4 )
+    66      67      68
+
 ]=] .. string.byte
   if A ~= string.byte then string.byte = A end
 end
@@ -2233,15 +2250,63 @@ if check( string, "char", 5.1 ) then
 
     string.char( ... ) ==> string
         ...: integer*  -- numerical character codes
+
+The `string.char` function converts the given numerical character
+codes into bytes, merges them into a single string and returns it.
+The internal numerical character codes are not necessarily portable
+across different platforms.
+
+###                            Examples                            ###
+
+    > A,B,C,D,E = string.byte( "ABCDE", 1, 5 )
+    > =string.char( A, B, C, D, E )
+    ABCDE
+    > s = string.char( B, C, D )
+    > =s, #s
+    BCD     3
 ]=] .. string.char
   if A ~= string.char then string.char = A end
 end
 
-if check( string, "dump", 5.1 ) then
+if check( string, "dump", V >= 5.1 and V < 5.2 ) then
   A = annotate[=[
 ##                    The `string.dump` Function                    ##
 
     string.dump( function ) ==> string
+
+The `string.dump` function returns the bytecode of a given Lua
+function as a string so it later can be loaded using `loadstring`.
+The Lua function cannot have upvalues.
+
+###                            Examples                            ###
+
+    > function f() return "hello world" end
+    > s = string.dump( f )
+    > f2 = loadstring( s )
+    > =f2()
+    hello world
+]=] .. string.dump
+  if A ~= string.dump then string.dump = A end
+end
+
+if check( string, "dump", 5.2 ) then
+  A = annotate[=[
+##                    The `string.dump` Function                    ##
+
+    string.dump( function ) ==> string
+
+The `string.dump` function returns the bytecode of a given Lua
+function as a string so it later can be loaded using `load`. The new
+Lua function will have different upvalues than the original Lua
+function.
+
+###                            Examples                            ###
+
+    > function f() return "hello world" end
+    > s = string.dump( f )
+    > f2 = load( s )
+    > =f2()
+    hello world
 ]=] .. string.dump
   if A ~= string.dump then string.dump = A end
 end
@@ -2302,6 +2367,15 @@ if check( string, "len", 5.1 ) then
 
     string.len( s ) ==> integer
         s: string
+
+The `string.len` function determines and returns the length of a
+string in bytes.
+
+###                            Examples                            ###
+
+    > s = "hello world"
+    > =string.len( s ), #s
+    11     11
 ]=] .. string.len
   if A ~= string.len then string.len = A end
 end
@@ -2312,6 +2386,19 @@ if check( string, "lower", 5.1 ) then
 
     string.lower( s ) ==> string
         s: string
+
+The `string.lower` function returns a copy of the given string where
+all occurrences of uppercase letters are replaced by their lowercase
+equivalents. What is considered an uppercase letter depends on the
+currently set locale. This function only works for single-byte
+encodings.
+
+###                            Examples                            ###
+
+    > =string.lower( "Hello, world!" )
+    hello, world!
+    > =string.lower( "ABCDEFG" )
+    abcdefg
 ]=] .. string.lower
   if A ~= string.lower then string.lower = A end
 end
@@ -2333,8 +2420,21 @@ if check( string, "rep", 5.1 ) then
   A = annotate[=[
 ##                     The `string.rep` Function                    ##
 
-    string.rep( s, integer ) ==> string
+    string.rep( s, n ) ==> string
         s: string
+        n: integer  -- repetitions of s
+
+The `string.rep` functions returns a string that consists of `n`
+repetitions of the input string.
+
+###                            Examples                            ###
+
+    > =string.rep( "#", 10 )
+    ##########
+    > =string.rep( "ab", 5 )
+    ababababab
+    > = "'"..string.rep( "abc", 0 ).."'"
+    ''
 ]=] .. string.rep
   if A ~= string.rep then string.rep = A end
 end
@@ -2345,6 +2445,14 @@ if check( string, "reverse", 5.1 ) then
 
     string.reverse( s ) ==> string
         s: string
+
+The `string.reverse` function returns a copy of a given string, where
+the order of bytes is reversed (i.e. the last byte comes first, etc.).
+
+###                            Examples                            ###
+
+    > =string.reverse( "abc" )
+    cba
 ]=] .. string.reverse
   if A ~= string.reverse then string.reverse = A end
 end
@@ -2357,6 +2465,26 @@ if check( string, "sub", 5.1 ) then
         s: string
         i: integer  -- start index
         j: integer  -- end index, defaults to #s
+
+The `string.sub` function extracts and returns a sub string of its
+first argument. The start and end indices for the sub string can be
+specified as optional arguments. Negative indices count from the end
+of the string.
+
+###                            Examples                            ###
+
+    > =string.sub( "hello world", 1 )
+    hello world
+    > =string.sub( "hello world", 7 )
+    world
+    > =string.sub( "hello world", 1, 5 )
+    hello
+    > =string.sub( "hello world", 1, -1 )
+    hello world
+    > =string.sub( "hello world", 1, -7 )
+    hello
+    > =string.sub( "hello world", 4, 8 )
+    lo wo
 ]=] .. string.sub
   if A ~= string.sub then string.sub = A end
 end
@@ -2367,6 +2495,19 @@ if check( string, "upper", 5.1 ) then
 
     string.upper( s ) ==> string
         s: string
+
+The `string.upper` function returns a copy of the given string where
+all occurrences of lowercase letters are replaced by their uppercase
+equivalents. What is considered an lowercase letter depends on the
+currently set locale. This function only works for single-byte
+encodings.
+
+###                            Examples                            ###
+
+    > =string.upper( "Hello, world!" )
+    HELLO, WORLD!
+    > =string.upper( "abcdefg" )
+    ABCDEFG
 ]=] .. string.upper
   if A ~= string.upper then string.upper = A end
 end
@@ -2754,10 +2895,12 @@ This function works the same way as the `annotate.help` func table
 itself, but it just returns the docstring (or nil) instead of printing
 it.
 
-###                             Example                            ###
+###                            Examples                            ###
 
     > help = require( "annotate.help" )
     > =help:lookup( help.lookup )
+    ## The `annotate.help.lookup` Function ...
+    > =help.lookup( "annotate.help.lookup" )
     ## The `annotate.help.lookup` Function ...
 ]=] .. lookup,
     search = annotate[=[
