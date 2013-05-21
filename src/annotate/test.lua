@@ -74,9 +74,7 @@ end
 
 local function output_pattern( lines )
   local s = t_concat( lines, "\n" )
-  s = s_gsub( s, "([%]%[%^%$%%%.%*%+%-%?])", function( c )
-    return "%"..c
-  end )
+  s = s_gsub( s, "[%]%[%^%$%%%.%*%+%-%?]", "%%%0" )
   s = s_gsub( s, "%%%.%%%.%%%.", ".-" )
   return "^"..(s_gsub( s, "%s+", "%%s+" )).."%s*$"
 end
