@@ -189,6 +189,20 @@ if check( _G, "collectgarbage", V >= 5.1 and V < 5.2 ) then
     collectgarbage( [opt [, arg]] ) ==> number/boolean
         opt: string   -- one of a set of commands
         arg: integer
+
+This function controls Lua's garbage collector. The specific outcome
+depends on the value of the `opt` argument:
+
+*   `"collect"`: Perform a full garbage collection cycle (default).
+*   `"stop"`: Stop the garbage collector.
+*   `"restart"`: Restart the garbage collector.
+*   `"count"`: Return total number of memory used by Lua (in kB).
+*   `"step"`: Perform a single garbage collection step. The amount of
+    garbage collected depends on the `arg` parameter. Returns `true`
+    if a full collection is complete.
+*   `"setpause"`: Set the `pause` parameter. Returns old value.
+*   `"setstepmul"`: Set the `step multiplier` parameter. Returns old
+    value.
 ]=] .. _G.collectgarbage
   if A ~= _G.collectgarbage then _G.collectgarbage = A end
 end
@@ -202,6 +216,24 @@ if check( _G, "collectgarbage", 5.2 ) then
                                     ==> boolean
         opt: string   -- one of a set of commands
         arg: integer
+
+This function controls Lua's garbage collector. The specific outcome
+depends on the value of the `opt` argument:
+
+*   `"collect"`: Perform a full garbage collection cycle (default).
+*   `"stop"`: Stop the garbage collector.
+*   `"restart"`: Restart the garbage collector.
+*   `"count"`: Return total number of memory used by Lua in kB and
+    in bytes modulo 1024.
+*   `"step"`: Perform a single garbage collection step. The amount of
+    garbage collected depends on the `arg` parameter. Returns `true`
+    if a full collection is complete.
+*   `"setpause"`: Set the `pause` parameter. Returns old value.
+*   `"setstepmul"`: Set the `step multiplier` parameter. Returns old
+    value.
+*   `"isrunning"`: Check if the garbage collector is active/stopped.
+*   `"generational"`: Set the GC to generational mode.
+*   `"incremental"`: Set the GC to incremental mode (the default).
 ]=] .. _G.collectgarbage
   if A ~= _G.collectgarbage then _G.collectgarbage = A end
 end
@@ -212,6 +244,11 @@ if check( _G, "dofile", 5.1 ) then
 
     dofile( [filename] ) ==> any*
         filename: string  -- file name to load and run
+
+Opens the given file, loads the contents as a Lua chunk, and calls it,
+returning all results and propagating errors raised within the chunk.
+If no file name is given, this function reads from the standard input
+`stdin`.
 ]=] .. _G.dofile
   if A ~= _G.dofile then _G.dofile = A end
 end
@@ -223,6 +260,24 @@ if check( _G, "error", 5.1 ) then
     error( message [, level] )
         message: any      -- an error message (typically a string)
         level  : integer  -- stack level where the error is raised
+
+This function raises a runtime error using the given error message and
+terminates the last protected function call. The `level` argument
+specifies the prefix added to the error message indicating the
+location of the error (`1` is the function calling `error`, `2` is the
+function calling the function that called `error`, etc.). `0` disables
+the error location prefix.
+
+###                            Examples                            ###
+
+    > error( "argh" )
+    ...: argh
+    stack traceback:
+            ...
+    > error( "argh", 0 )
+    argh
+    stack traceback:
+            ...
 ]=] .. _G.error
   if A ~= _G.error then _G.error = A end
 end
@@ -233,6 +288,21 @@ if check( _G, "getfenv", V >= 5.1 and V < 5.2 ) then
 
     getfenv( [f] ) ==> table/nil
         f: function/integer  -- a function or a stack level
+
+Returns the current environment for the given function. If `f` is an
+integer, it is interpreted as a stack level to find the function on
+the call stack: `1` (which is the default) is the function calling
+`getfenv`, `2` is the function calling the function which called
+`getfenv`, and so on. If the given function is not a Lua function or
+if the stack level is `0`, the global environment is returned.
+
+###                            Examples                            ###
+
+    > function f() end
+    > e = {}
+    > setfenv( f, e )
+    > =getfenv( f ) == e
+    true
 ]=] .. _G.getfenv
   if A ~= _G.getfenv then _G.getfenv = A end
 end
@@ -241,9 +311,22 @@ if check( _G, "getmetatable", 5.1 ) then
   A = annotate[=[
 ##                    The `getmetatable` Function                   ##
 
-    getmetatable( object ) ==> table/nil
+    getmetatable( val ) ==> table/nil
+        val: any
+
+If the given value has a metatable with a `__metatable` field, this
+function returns the value of this field, otherwise it returns the
+metatable itself (or nil if there is no metatable).
+
+###                            Examples                            ###
+
+    > =getmetatable( "" ).__index == string
+    true
+    > =getmetatable( io.stdin )
+    table: ...
+    > =getmetatable( {} )
+    nil
 ]=] .. _G.getmetatable
-  if A ~= _G.getmetatable then _G.getmetatable = A end
 end
 
 if check( _G, "ipairs", V >= 5.1 and V < 5.2 ) then
@@ -251,6 +334,18 @@ if check( _G, "ipairs", V >= 5.1 and V < 5.2 ) then
 ##                       The `ipairs` Function                      ##
 
     ipairs( table ) ==> function, (any, any?)?
+
+This function returns a for-loop iterator tuple that iterates (in
+order) over the integer keys (and corresponding values) in the given
+table starting at index `1` until the first `nil` value is
+encountered.
+
+###                            Examples                            ###
+
+    > for i,v in ipairs( { 1, 2, 3, nil, 5 } ) do print( i, v ) end
+    1       1
+    2       2
+    3       3
 ]=] .. _G.ipairs
   if A ~= _G.ipairs then _G.ipairs = A end
 end
@@ -259,7 +354,35 @@ if check( _G, "ipairs", 5.2 ) then
   A = annotate[=[
 ##                       The `ipairs` Function                      ##
 
-    ipairs( object ) ==> function, (any, any?)?
+    ipairs( val ) ==> function, (any, any?)?
+        val: any
+
+If the given value has a metatable with a `__ipairs` field, this
+function calls the `__ipairs` field to get a for-loop iterator tuple.
+If there is no `__ipairs` metafield (in which case `val` must be a
+table), this function returns a for-loop iterator tuple that iterates
+(in order) over the integer keys (and corresponding values) in the
+given table starting at index `1` until the first `nil` value is
+encountered.
+
+###                            Examples                            ###
+
+    > for i,v in ipairs( { 1, 2, 3, nil, 5 } ) do print( i, v ) end
+    1       1
+    2       2
+    3       3
+    > getmetatable( "" ).__ipairs = function( s )
+    >> return function( st, i )
+    >>  i = i + 1
+    >>  if i <= #st then
+    >>   return i, st:sub( i, i )
+    >>  end
+    >> end, s, 0
+    >> end
+    > for i,c in ipairs( "abc" ) do print( i, c ) end
+    1       a
+    2       b
+    3       c
 ]=] .. _G.ipairs
   if A ~= _G.ipairs then _G.ipairs = A end
 end
@@ -453,6 +576,14 @@ if check( _G, "setfenv", V >= 5.1 and V < 5.2 ) then
 
     setfenv( f, table ) ==> function?
         f: function/integer  -- (stack level of) function to modify
+
+###                            Examples                            ###
+
+    > function p() print( "hello world" ) end
+    > function f() x() end
+    > setfenv( f, { x = p } )
+    > f()
+    hello world
 ]=] .. _G.setfenv
   if A ~= _G.setfenv then _G.setfenv = A end
 end
