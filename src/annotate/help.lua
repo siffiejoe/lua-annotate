@@ -7,6 +7,7 @@ local s_match = assert( string.match )
 local s_rep = assert( string.rep )
 local _VERSION = assert( _VERSION )
 local type = assert( type )
+local next = assert( next )
 local pairs = assert( pairs )
 local select = assert( select )
 local tostring = assert( tostring )
@@ -3034,6 +3035,14 @@ it.
     > =help.lookup( "annotate.help.lookup" )
     ## The `annotate.help.lookup` Function ...
 ]=] .. lookup,
+    iterate = annotate[=[
+##               The `annotate.help.iterate` Function               ##
+
+    annotate.help.iterate() ==> function, (any, any?)?
+
+This function returns a for-loop iterator tuple that iterates over all
+values and their docstrings.
+]=] .. function() return next, docstring_cache, nil end,
     search = annotate[=[
 ##                The `annotate.help.search` Function               ##
 

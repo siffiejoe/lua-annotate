@@ -96,6 +96,14 @@ local function check_doc( name, value )
   end
 end
 check_doc()
+
+--[[
+for v,ds in help.iterate() do
+  print( delim )
+  print( ds )
+end
+--]]
+
 print( delim )
 
 test( tonumber( os.getenv( "VERBOSE" ) ) )
