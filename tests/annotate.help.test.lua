@@ -63,7 +63,7 @@ print( delim )
 help( "table.concat" )
 print( delim )
 print( "searching for getfenv:" )
-help:search( "getfenv", help.ansi_highlight )
+help:search( "getfenv" )
 print( delim )
 
 local cache = {}

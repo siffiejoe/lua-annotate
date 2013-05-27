@@ -2910,7 +2910,7 @@ The `annotate.help` module table also contains the following fields:
 *   `annotate.help.wrap` -- Use another help function as fallback.
 *   `annotate.help.lookup` -- Lookup the annotation without printing.
 *   `annotate.help.search` -- Print any annotation matching a pattern.
-*   `annotate.help.ansi_highlight` -- Highlight search results.
+*   `annotate.help.iterate` -- Iterate over all values and docstrings.
 ]=] .. {}
 
 
@@ -2971,16 +2971,10 @@ end
 
 
 local delim = s_rep( "-", 70 )
-local ansi_high = "\027[34;40;1m"
-local ansi_reset = "\027[39;49;0m"
 
-local function ansi_highlight( v )
-  return ansi_high .. v .. ansi_reset
-end
-
-local function search( self, s, hilighter )
+local function search( self, s )
   if self ~= M then
-    self, s, hilighter = M, self, s
+    self, s = M, self
   end
   local first_match = true
   for v,ds in pairs( docstring_cache ) do
@@ -2988,11 +2982,7 @@ local function search( self, s, hilighter )
       if not first_match then
         print( delim )
       end
-      if type( hilighter ) == "function" then
-        print( trim( s_gsub( ds, "("..s..")" , hilighter ) ) )
-      else
-        print( trim( ds ) )
-      end
+      print( trim( ds ) )
       first_match = false
     end
   end
@@ -3038,7 +3028,8 @@ it.
     iterate = annotate[=[
 ##               The `annotate.help.iterate` Function               ##
 
-    annotate.help.iterate() ==> function, (any, any?)?
+    annotate.help.iterate( [self] ) ==> function, (any, any?)?
+        self: table   -- the annotate.help table itself
 
 This function returns a for-loop iterator tuple that iterates over all
 values and their docstrings.
@@ -3046,10 +3037,9 @@ values and their docstrings.
     search = annotate[=[
 ##                The `annotate.help.search` Function               ##
 
-    annotate.help.search( [self,] pattern [, high] )
+    annotate.help.search( [self,] pattern )
         self   : table     -- the annotate.help table itself
         pattern: string    -- a pattern describing what to look for
-        high   : function  -- a function used for highlighting
 
 This function prints all docstrings that contain a substring matching
 the given Lua string pattern (or a small notice/error message). If
@@ -3058,16 +3048,6 @@ to highlight the substring(s) that matched the pattern. One example
 of such a highlighter function is `annotate.help.ansi_highlight` which
 uses ANSI color escape sequences.
 ]=] .. search,
-    ansi_highlight = annotate[=[
-##            The `annotate.help.ansi_highlight` Function           ##
-
-    annotate.help.ansi_highlight( string ) ==> string
-
-If passed to `annotate.help.search`, this function adds ANSI color
-escape sequences to the substrings matching the pattern in the search
-so that those substrings have a different color when printed to a
-suitable terminal/console.
-]=] .. ansi_highlight,
   },
   __call = function( _, topic )
     print( lookup( M, topic ) or

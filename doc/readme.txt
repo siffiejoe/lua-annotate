@@ -420,10 +420,10 @@ docstring. Assuming `help` is the return value of the `require`-call:
     Tries to find a docstring for the given value and returns it.
     Returns `nil` if no docstring can be found.
 
-*   `help.ansi_highlight`
+*   `help.iterate() or help:iterate()`
 
-    A highlighter function for `search` using ANSI escape sequences
-    for colorized output.
+    Returns a for-loop iterator that iterates over all values and
+    their docstrings.
 
   [10]:  https://github.com/dlaurie/lua-ihelp/
 
