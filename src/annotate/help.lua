@@ -2976,6 +2976,7 @@ local function search( self, s )
   if self ~= M then
     self, s = M, self
   end
+  assert( type( s ) == "string", "search term must be a string" )
   local first_match = true
   for v,ds in pairs( docstring_cache ) do
     if s_match( ds, s ) then

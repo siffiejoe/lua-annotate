@@ -401,8 +401,7 @@ docstring. Assuming `help` is the return value of the `require`-call:
     Prints the annotation for the given value, or a short notice that
     no docstring could be found for that value.
 
-*   `help:search( pattern [, highlighter] )` or
-    `help.search( pattern [, highlighter] )`
+*   `help:search( pattern )` or `help.search( pattern )`
 
     Prints all annotations that match the given pattern, or a short
     notice that no matching docstring could be found. If `highlighter`
@@ -420,7 +419,7 @@ docstring. Assuming `help` is the return value of the `require`-call:
     Tries to find a docstring for the given value and returns it.
     Returns `nil` if no docstring can be found.
 
-*   `help.iterate() or help:iterate()`
+*   `help:iterate() or help.iterate()`
 
     Returns a for-loop iterator that iterates over all values and
     their docstrings.
@@ -552,7 +551,7 @@ The result is:
 
 ##                             Changelog                            ##
 
-*   Version 0.2 [2013/05/xx]
+*   Version 0.2 [2013/06/xx]
     *    added plugin for simple interactive help
     *    added plugin for running test code within annotations
 *   Version 0.1 [2013/04/21]
