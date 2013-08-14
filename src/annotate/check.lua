@@ -13,11 +13,11 @@ local select = assert( select )
 local error = assert( error )
 local tostring = assert( tostring )
 local setmetatable = assert( setmetatable )
-local tinsert = assert( table.insert )
-local tconcat = assert( table.concat )
-local tsort = assert( table.sort )
-local sformat = assert( string.format )
-local lpegmatch = assert( L.match )
+local t_insert = assert( table.insert )
+local t_concat = assert( table.concat )
+local t_sort = assert( table.sort )
+local s_format = assert( string.format )
+local L_match = assert( L.match )
 local loadstring = assert( loadstring or load )
 local unpack = assert( unpack or table.unpack )
 -- optional
@@ -266,7 +266,7 @@ do
   -- speed up lookups.
   function DFA:lookup()
     local indices = {}
-    tsort( self.transitions )
+    t_sort( self.transitions )
     local tr_index = 1
     for i = 1, self.n+1 do
       indices[ i ] = tr_index
@@ -291,9 +291,9 @@ do
   local function n_args( n, fmt )
     local s = ""
     for i = 1, n do
-      s = s .. sformat( fmt, i )
+      s = s..s_format( fmt, i )
       if i ~= n then
-        s = s .. ", "
+        s = s..", "
       end
     end
     return s
@@ -372,7 +372,7 @@ function state_]]..i..[[( i, n, ... )
 ]]
       end
       if self.flags[ i ] then
-        code = code .. [[
+        code = code..[[
     local s = "too many "..etype.."s (expected "..(i+ioff-1)..")"
     msg = msg and msg..",\n\tor "..s or s
 ]]
@@ -432,7 +432,7 @@ function state_]]..i..[[( msg, i, n, ... )
         code = code..[[
     if msg then
       msg[ #msg+1 ] = "missing "..etype.."(s) at index "..(i+ioff)..
-                      " (expected ]] .. types ..[[)"
+                      " (expected ]]..types..[[)"
     end
 ]]
       end
@@ -461,7 +461,7 @@ function state_]]..i..[[( msg, i, n, ... )
 ]]
       end
       if self.flags[ i ] then
-        code = code .. [[
+        code = code..[[
       msg[ #msg+1 ] = "too many "..etype.."s (expected "..
                       (i+ioff-1)..")"
 ]]
@@ -633,10 +633,10 @@ local function nfa_from_expr( types, expr )
       if n then n:opt() end
       return n, msg
     else
-      error( "invalid node in expression tree: " .. tostring( expr[ 1 ] ) )
+      error( "invalid node in expression tree: "..tostring( expr[ 1 ] ) )
     end
   else
-    error( "invalid value in expression tree: " .. tostring( expr ) )
+    error( "invalid value in expression tree: "..tostring( expr ) )
   end
 end
 
@@ -665,7 +665,7 @@ local function arg2nfa( types, symtab, usedargs, arg )
       return nil, "argument name `"..arg.."' not defined!"
     end
   else
-    error( "invalid value in argument list: " .. tostring( arg ) )
+    error( "invalid value in argument list: "..tostring( arg ) )
   end
 end
 
@@ -726,7 +726,7 @@ local function compile_args_check( types, spec, name, is_method, args,
   end
   -- combine with arglists
   if is_method then
-    tinsert( args, 1, "self" )
+    t_insert( args, 1, "self" )
   end
   local n, msg = nfa_from_args( types, symtab, args )
   if not n then
@@ -739,7 +739,7 @@ local function compile_args_check( types, spec, name, is_method, args,
   --print( source )
   local f = assert( loadstring( source, "=[compiled_arg_check]" ) )
   local off = is_method and -1 or 0
-  return f( spec, name, "argument", off, 0, select, error, tconcat,
+  return f( spec, name, "argument", off, 0, select, error, t_concat,
             unpack( id2f ) )
 end
 
@@ -758,14 +758,14 @@ local function compile_return_check( types, spec, name, rets, warn )
   -- Lua 5.2 doesn't count tailcalls for errorlevels ...
   local erroff = _VERSION ~= "Lua 5.1" and -1 or 0
   return f( spec, name, "return value", 0, erroff, select, error,
-            tconcat, unpack( id2f ) )
+            t_concat, unpack( id2f ) )
 end
 
 
 -- compiles the given string into argument and return checking functions
 local function compile_typespec( input, types, do_arg, do_ret, warn )
   warn = warn or error
-  local spec, name, is_method, args, rets, argtypes = lpegmatch( g, input )
+  local spec, name, is_method, args, rets, argtypes = L_match( g, input )
   if not spec then
     warn( "[check]: docstring does not contain type specification!" )
   else
