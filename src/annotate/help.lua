@@ -2548,7 +2548,7 @@ if check( string, "match", 5.1 ) then
   if A ~= string.match then string.match = A end
 end
 
-if check( string, "rep", 5.1 ) then
+if check( string, "rep", V >= 5.1 and V < 5.2 ) then
   A = annotate[=[
 ##                     The `string.rep` Function                    ##
 
@@ -2565,6 +2565,33 @@ repetitions of the input string.
     ##########
     > =string.rep( "ab", 5 )
     ababababab
+    > = "'"..string.rep( "abc", 0 ).."'"
+    ''
+]=] .. string.rep
+  if A ~= string.rep then string.rep = A end
+end
+
+if check( string, "rep", 5.2 ) then
+  A = annotate[=[
+##                     The `string.rep` Function                    ##
+
+    string.rep( s, n [, sep] ) ==> string
+        s: string
+        n: integer  -- repetitions of s
+      sep: string   -- seperator between occurrences of s
+
+The `string.rep` functions returns a string that consists of `n`
+repetitions of the input string delimited by the given separator. The
+default separator is the empty string.
+
+###                            Examples                            ###
+
+    > =string.rep( "#", 10 )
+    ##########
+    > =string.rep( "ab", 5 )
+    ababababab
+    > =string.rep( "ab", 5, "," )
+    ab,ab,ab,ab,ab
     > = "'"..string.rep( "abc", 0 ).."'"
     ''
 ]=] .. string.rep
