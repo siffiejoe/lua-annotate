@@ -111,7 +111,7 @@ seventh = annotate[=[
 function( a, ... ) end
 
 
- func = annotate[=[
+func = annotate[=[
 This is function `func`.
 
    func( n ) ==> number
@@ -132,6 +132,10 @@ Examples:
     world
     > = 2+"x"
     ...attempt to perform arithmetic...
+    > (function() print( "xxx" ) end)()
+    xxx
+    > coroutine.wrap( function() print( "yyy" ) end )()
+    yyy
 
 This is the end of the test code!
 ]=] ..

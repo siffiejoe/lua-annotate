@@ -864,6 +864,17 @@ if check( coroutine, "create", 5.1 ) then
 ##                  The `coroutine.create` Function                 ##
 
     coroutine.create( function ) ==> thread
+
+This function creates and returns a new coroutine which, when resumed,
+executes the given function.
+
+###                            Examples                            ###
+
+    > co = coroutine.create( function() print( "xy" ) end )
+    > =co
+    thread: ...
+    > coroutine.resume( co )
+    xy
 ]=] .. coroutine.create
   if A ~= coroutine.create then coroutine.create = A end
 end
@@ -874,15 +885,77 @@ if check( coroutine, "resume", 5.1 ) then
 
     coroutine.resume( thread, ... ) ==> boolean, any*
         ...: any*  -- arguments passed to the thread
+
+This function starts or continues the given coroutine which must be in
+a suspended state. All extra arguments given to `coroutine.resume` are
+passed to the coroutine via arguments to the coroutine body (if the
+coroutine has never been resumed before), or as return values of the
+previous call to `coroutine.yield` (if the coroutine yielded before).
+The first return value of `coroutine.resume` indicates whether the
+coroutine executed normally (`true`), or raised an error (`false`).
+In case of an error, the error messages is passed as the second return
+value. In case of successful execution, the extra return values are
+the arguments passed to the last `coroutine.yield` call inside the
+resumed coroutine.
+
+###                            Examples                            ###
+
+    > co1 = coroutine.create( function( a, b )
+    >> while true do
+    >>   print( a, b )
+    >>   a = coroutine.yield( a )
+    >> end
+    >> end )
+    > =coroutine.resume( co1, 1, 1 )
+    1       1
+    true    1
+    > =coroutine.resume( co1, 2, 2 )
+    2       1
+    true    2
+    > co2 = coroutine.create( function() error( "argh" ) end )
+    > =coroutine.resume( co2 )
+    false   ...argh
+
+
 ]=] .. coroutine.resume
   if A ~= coroutine.resume then coroutine.resume = A end
 end
 
-if check( coroutine, "running", 5.1 ) then
+if check( coroutine, "running", V >= 5.1 and V < 5.2 ) then
   A = annotate[=[
 ##                 The `coroutine.running` Function                 ##
 
     coroutine.running() ==> thread/nil
+
+When this function is called from within a resumed coroutine, it
+returns this coroutine. Otherwise it returns nil.
+
+###                            Examples                            ###
+
+    > =coroutine.wrap( function() return coroutine.running() end )()
+    thread: ...
+    > =coroutine.running()
+    nil
+]=] .. coroutine.running
+  if A ~= coroutine.running then coroutine.running = A end
+end
+
+if check( coroutine, "running", 5.2 ) then
+  A = annotate[=[
+##                 The `coroutine.running` Function                 ##
+
+    coroutine.running() ==> thread, boolean
+
+This function returns the currently resumed coroutine and a boolean,
+which indicates whether the coroutine is the main coroutine (`true`)
+or a coroutine created during the execution of the program (`false`).
+
+###                            Examples                            ###
+
+    > =coroutine.wrap( function() return coroutine.running() end )()
+    thread: ...      false
+    > =coroutine.running()
+    thread: ...      true
 ]=] .. coroutine.running
   if A ~= coroutine.running then coroutine.running = A end
 end
@@ -892,6 +965,36 @@ if check( coroutine, "status", 5.1 ) then
 ##                  The `coroutine.status` Function                 ##
 
     coroutine.status( thread ) ==> string
+
+This function returns the current status of the given coroutine as a
+string, which can be "running", "suspended", "normal", or "dead". A
+coroutine is "dead", if it has returned from its body or raised an
+error. A coroutine is "suspended", if it isn't dead, and hasn't
+yielded, or if it hasn't been resumed yet. A coroutine is "running" if
+it is not dead or suspended, and has not resumed another coroutine. A
+coroutine that resumes another coroutine has "normal" status.
+
+###                            Examples                            ###
+
+    > co1 = coroutine.create( function()
+    >> print( "[co1] co2 is", coroutine.status( co2 ) )
+    >> end )
+    > co2 = coroutine.create( function()
+    >> print( "[co2] co2 is", coroutine.status( co2 ) )
+    >> coroutine.yield()
+    >> coroutine.resume( co1 )
+    >> end )
+    > =coroutine.status( co2 )
+    suspended
+    > coroutine.resume( co2 )
+    [co2] co2 is    running
+    > =coroutine.status( co2 )
+    suspended
+    > coroutine.resume( co2 )
+    [co1] co2 is    normal
+    > =coroutine.status( co2 )
+    dead
+
 ]=] .. coroutine.status
   if A ~= coroutine.status then coroutine.status = A end
 end
@@ -901,6 +1004,26 @@ if check( coroutine, "wrap", 5.1 ) then
 ##                   The `coroutine.wrap` Function                  ##
 
     coroutine.wrap( function ) ==> function
+
+This function creates a new coroutine and returns a wrapper function
+that, when called, resumes the couroutine which in turn calls the
+function passed as argument to `coroutine.wrap`. All arguments of the
+wrapper function call are passed to `coroutine.resume`.
+
+###                            Examples                            ###
+
+    > co = coroutine.wrap( function( ... )
+    >> local n, a, b = 0, ...
+    >> while true do
+    >>   n = n + 1
+    >>   print( n, a, b )
+    >>   a, b = coroutine.yield()
+    >> end
+    >> end )
+    > co( "a", "b" )
+    1       a       b
+    > co( "c", "d" )
+    2       c       d
 ]=] .. coroutine.wrap
   if A ~= coroutine.wrap then coroutine.wrap = A end
 end
@@ -911,6 +1034,29 @@ if check( coroutine, "yield", 5.1 ) then
 
     coroutine.yield( ... ) ==> any*
         ...: any*  -- arguments passed to resume
+
+When called from inside a running coroutine, this function suspends
+the coroutine and returns execution to the last `coroutine.resume`
+call that activated the coroutine. All arguments to `coroutine.yield`
+are passed as return values of this `coroutine.resume` call. When
+activated again, the execution of the coroutine continues with the
+return from the `coroutine.yield` call, which passes all extra
+arguments of the last `coroutine.resume` as return values.
+
+###                            Examples                            ###
+
+    > co = coroutine.create( function()
+    >> print( "resuming after yield 1", coroutine.yield( 1 ) )
+    >> print( "resuming after yield 2", coroutine.yield( 2 ) )
+    >> end )
+    > =coroutine.resume( co )
+    true    1
+    > =coroutine.resume( co, "a" )
+    resuming after yield 1   a
+    true   2
+    > =coroutine.resume( co, "b" )
+    resuming after yield 2   b
+    true
 ]=] .. coroutine.yield
   if A ~= coroutine.yield then coroutine.yield = A end
 end
@@ -1780,7 +1926,7 @@ if check( math, "log", 5.2 ) then
 
     math.log( x [, base] ) ==> number
         x   : number
-        base: integer  -- defaults to e
+        base: number  -- defaults to e
 ]=] .. math.log
   if A ~= math.log then math.log = A end
 end
@@ -2576,9 +2722,9 @@ if check( string, "rep", 5.2 ) then
 ##                     The `string.rep` Function                    ##
 
     string.rep( s, n [, sep] ) ==> string
-        s: string
-        n: integer  -- repetitions of s
-      sep: string   -- seperator between occurrences of s
+        s  : string
+        n  : integer  -- repetitions of s
+        sep: string   -- seperator between occurrences of s
 
 The `string.rep` functions returns a string that consists of `n`
 repetitions of the input string delimited by the given separator. The
