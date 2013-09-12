@@ -3216,11 +3216,7 @@ values and their docstrings.
         pattern: string    -- a pattern describing what to look for
 
 This function prints all docstrings that contain a substring matching
-the given Lua string pattern (or a small notice/error message). If
-`high` is a function, it is passed with the pattern to `string.gsub`
-to highlight the substring(s) that matched the pattern. One example
-of such a highlighter function is `annotate.help.ansi_highlight` which
-uses ANSI color escape sequences.
+the given Lua string pattern (or a small notice/error message).
 ]=] .. search,
   },
   __call = function( _, topic )
