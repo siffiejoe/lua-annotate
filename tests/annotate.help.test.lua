@@ -13,7 +13,7 @@ local help = require( "annotate.help" )
 
 -- load https://github.com/dlaurie/lua-ihelp
 local ldoc_help
-pcall( function() ldoc_help = require( "help" ) end )
+pcall( function() ldoc_help = require( "ihelp" ) end )
 ldoc_help = ldoc_help and help:wrap( ldoc_help )
 
 package.preload[ "a.b" ] = function()

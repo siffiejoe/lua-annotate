@@ -8,7 +8,6 @@ local s_rep = assert( string.rep )
 local _VERSION = assert( _VERSION )
 local type = assert( type )
 local next = assert( next )
-local pairs = assert( pairs )
 local select = assert( select )
 local tostring = assert( tostring )
 local tonumber = assert( tonumber )
@@ -707,8 +706,25 @@ if check( bit32, "arshift", 5.2 ) then
   A = annotate[=[
 ##                   The `bit32.arshift` Function                   ##
 
-    bit32.arshift( number [, disp] ) ==> integer
+    bit32.arshift( number, disp ) ==> integer
         disp: integer  -- number of bits to shift
+
+Right-shifts (from highest-order bit to lowest-order bit) the given
+number by `disp` bits and returns the result. Inserts ones at the
+position of the highest order bit if the highest order bit was set,
+and zeros otherwise. If `disp` is negative, the function performs a
+left-shift inserting zeros at the lowest-order bit position.
+
+###                            Examples                            ###
+
+    > =bit32.arshift( 4, 1 )
+    2
+    > =bit32.arshift( 2, -2 )
+    8
+    > =bit32.arshift( 4294967295, -1 )
+    4294967294
+    > =bit32.arshift( 4294967295, 3 )
+    4294967295
 ]=] .. bit32.arshift
   if A ~= bit32.arshift then bit32.arshift = A end
 end
@@ -719,6 +735,18 @@ if check( bit32, "band", 5.2 ) then
 
     bit32.band( ... ) ==> integer
         ...: number*
+
+This function performs a binary `and` on all given numbers and returns
+the result. If no number is given, `4294967295` is returned.
+
+###                            Examples                            ###
+
+    > =bit32.band()
+    4294967295
+    > =bit32.band( 8 )
+    8
+    > =bit32.band( 7, 3, 2 )
+    2
 ]=] .. bit32.band
   if A ~= bit32.band then bit32.band = A end
 end
@@ -728,6 +756,18 @@ if check( bit32, "bnot", 5.2 ) then
 ##                     The `bit32.bnot` Function                    ##
 
     bit32.bnot( number ) ==> integer
+
+This function inverts all bits in the given number and returns the
+result.
+
+###                            Examples                            ###
+
+    > =bit32.bnot( 2^32-1 )
+    0
+    > =bit32.bnot( 0 )
+    4294967295
+    > =bit32.bnot( 1 )
+    4294967294
 ]=] .. bit32.bnot
   if A ~= bit32.bnot then bit32.bnot = A end
 end
@@ -738,6 +778,18 @@ if check( bit32, "bor", 5.2 ) then
 
     bit32.bor( ... ) ==> integer
         ...: number*
+
+This function performs a bitwise `or` on its arguments and returns the
+resulting number. If no number is given, `0` is returned.
+
+###                            Examples                            ###
+
+    > =bit32.bor()
+    0
+    > =bit32.bor( 8 )
+    8
+    > =bit32.bor( 1, 2, 4 )
+    7
 ]=] .. bit32.bor
   if A ~= bit32.bor then bit32.bor = A end
 end
@@ -772,6 +824,18 @@ if check( bit32, "bxor", 5.2 ) then
 
     bit32.bxor( ... ) ==> integer
         ...: number*
+
+This function performs a binary `exclusive or` an its arguments and
+returns the resulting number. If no number is given, `0` is returned.
+
+###                            Examples                            ###
+
+    > =bit32.bxor()
+    0
+    > =bit32.bxor( 8 )
+    8
+    > =bit32.bxor( 7, 3, 5 )
+    1
 ]=] .. bit32.bxor
   if A ~= bit32.bxor then bit32.bxor = A end
 end
@@ -783,6 +847,21 @@ if check( bit32, "extract", 5.2 ) then
     bit32.extract( number, index [, width] ) ==> integer
         index: integer  -- starting index of bits to extract
         width: integer  -- number of bits in field, default is 1
+
+This function extracts an contiguous subset of bits from the given
+number and returns it as an unsigned number. The starting index
+`index` may be in the range of `0` (least significant bit) to `31`
+(most significant bit). The end index `index+width-1` must be in the
+same range.
+
+###                            Examples                            ###
+
+    > =bit32.extract( 7, 0, 2 )
+    3
+    > =bit32.extract( 5, 1, 2 )
+    2
+    > =bit32.extract( 2^31, 31 )
+    1
 ]=] .. bit32.extract
   if A ~= bit32.extract then bit32.extract = A end
 end
@@ -791,8 +870,23 @@ if check( bit32, "lrotate", 5.2 ) then
   A = annotate[=[
 ##                   The `bit32.lrotate` Function                   ##
 
-    bit32.lrotate( number [, disp] ) ==> integer
+    bit32.lrotate( number, disp ) ==> integer
         disp: integer  -- number of bits to shift
+
+Shifts the bits in the given number `disp` positions to the left (in
+the direction of the most significant bit), reinserting the overflow
+bits at the position of the least significant bit (at the right).
+Negative values for `disp` shift to the right, reinserting at the
+left.
+
+###                            Examples                            ###
+
+    > =bit32.lrotate( 2^31, 1 )
+    1
+    > =bit32.lrotate( 2, -1 )
+    1
+    > =bit32.lrotate( 3, 2 )
+    12
 ]=] .. bit32.lrotate
   if A ~= bit32.lrotate then bit32.lrotate = A end
 end
@@ -801,8 +895,22 @@ if check( bit32, "lshift", 5.2 ) then
   A = annotate[=[
 ##                    The `bit32.lshift` Function                   ##
 
-    bit32.lshift( number [, disp] ) ==> integer
+    bit32.lshift( number, disp ) ==> integer
         disp: integer  -- number of bits to shift
+
+Shifts the bits in the given number `disp` positions to the left (in
+the direction of the most significant bit), inserting `0` bits at the
+right (position of least significant bit). Negative values for `disp`
+shift to the right, inserting `0` at the left.
+
+###                            Examples                            ###
+
+    > =bit32.lshift( 2^31, 1 )
+    0
+    > =bit32.lshift( 2, -1 )
+    1
+    > =bit32.lshift( 3, 2 )
+    12
 ]=] .. bit32.lshift
   if A ~= bit32.lshift then bit32.lshift = A end
 end
@@ -815,6 +923,22 @@ if check( bit32, "replace", 5.2 ) then
         v    : number   -- replacement value for the bit field
         index: integer  -- starting index of bits to replace
         width: integer  -- number of bits to replace, default is 1
+
+This function replaces a contiguous subset of bit in the given number
+with an equal amount of bits from the number `v` and returns the
+result. The starting index `index` and end index `index+width-1` must
+be in the range of `0` (least significant bit) to `31` (most
+significant bit). The replacement bit field is always taken starting
+at the least significant bit.
+
+###                            Examples                            ###
+
+    > =bit32.replace( 15, 0, 0 )
+    14
+    > =bit32.replace( 15, 0, 2, 2 )
+    3
+    > =bit32.replace( 0, 1, 31 )
+    2147483648
 ]=] .. bit32.replace
   if A ~= bit32.replace then bit32.replace = A end
 end
@@ -823,8 +947,23 @@ if check( bit32, "rrotate", 5.2 ) then
   A = annotate[=[
 ##                   The `bit32.rrotate` Function                   ##
 
-    bit32.rrotate( number [, disp] ) ==> integer
+    bit32.rrotate( number, disp ) ==> integer
         disp: integer  -- number of bits to shift
+
+Shifts the bits in the given number `disp` positions to the right (in
+the direction of the least significant bit), reinserting the overflow
+bits at the position of the most significant bit (at the left).
+Negative values for `disp` shift to the left, reinserting at the
+right.
+
+###                            Examples                            ###
+
+    > =bit32.rrotate( 1, 1 )
+    2147483648
+    > =bit32.rrotate( 12, 2 )
+    3
+    > =bit32.rrotate( 1, -1 )
+    2
 ]=] .. bit32.rrotate
   if A ~= bit32.rrotate then bit32.rrotate = A end
 end
@@ -833,8 +972,22 @@ if check( bit32, "rshift", 5.2 ) then
   A = annotate[=[
 ##                    The `bit32.rshift` Function                   ##
 
-    bit32.rshift( number [, disp] ) ==> integer
+    bit32.rshift( number, disp ) ==> integer
         disp: integer  -- number of bits to shift
+
+Shifts the bits in the given number `disp` positions to the right (in
+the direction of the least significant bit), inserting `0` bits at the
+left (position of most significant bit). Negative values for `disp`
+shift to the left, inserting `0` at the right.
+
+###                            Examples                            ###
+
+    > =bit32.rshift( 2, 2 )
+    0
+    > =bit32.rshift( 1, -1 )
+    2
+    > =bit32.rshift( 12, 2 )
+    3
 ]=] .. bit32.rshift
   if A ~= bit32.rshift then bit32.rshift = A end
 end
@@ -1245,11 +1398,21 @@ if check( debug, "setlocal", 5.1 ) then
   if A ~= debug.setlocal then debug.setlocal = A end
 end
 
-if check( debug, "setmetatable", 5.1 ) then
+if check( debug, "setmetatable", V >= 5.1 and V < 5.2 ) then
   A = annotate[=[
 ##                 The `debug.setmetatable` Function                ##
 
     debug.setmetatable( any, t ) ==> boolean
+        t: table/nil  -- the metatable to set
+]=] .. debug.setmetatable
+  if A ~= debug.setmetatable then debug.setmetatable = A end
+end
+
+if check( debug, "setmetatable", 5.2 ) then
+  A = annotate[=[
+##                 The `debug.setmetatable` Function                ##
+
+    debug.setmetatable( any, t ) ==> any
         t: table/nil  -- the metatable to set
 ]=] .. debug.setmetatable
   if A ~= debug.setmetatable then debug.setmetatable = A end
@@ -1525,11 +1688,22 @@ if check( io, "type", 5.1 ) then
   if A ~= io.type then io.type = A end
 end
 
-if check( io, "write", 5.1 ) then
+if check( io, "write", V >= 5.1 and V < 5.2 ) then
   A = annotate[=[
 ##                      The `io.write` Function                     ##
 
     io.write( ... ) ==> boolean               -- on success
+                    ==> nil, string, integer  -- in case of error
+        ...: (string/number)*  -- values to write to io.output()
+]=] .. io.write
+  if A ~= io.write then io.write = A end
+end
+
+if check( io, "write", 5.2 ) then
+  A = annotate[=[
+##                      The `io.write` Function                     ##
+
+    io.write( ... ) ==> file                  -- on success
                     ==> nil, string, integer  -- in case of error
         ...: (string/number)*  -- values to write to io.output()
 ]=] .. io.write
@@ -1636,7 +1810,19 @@ if check( file, "setvbuf", 5.1 ) then
   if A ~= file.setvbuf then file.setvbuf = A end
 end
 
-if check( file, "write", 5.1 ) then
+if check( file, "write", V >= 5.1 and V < 5.2 ) then
+  A = annotate[=[
+##                     The `file:write()` Method                    ##
+
+    file:write( ... ) ==> file                  -- on success
+                      ==> nil, string, integer  -- in case of error
+        self: file
+        ... : (string/number)*  -- values to write to the file
+]=] .. file.write
+  if A ~= file.write then file.write = A end
+end
+
+if check( file, "write", 5.2 ) then
   A = annotate[=[
 ##                     The `file:write()` Method                    ##
 
@@ -3151,7 +3337,7 @@ local function search( self, s )
   end
   assert( type( s ) == "string", "search term must be a string" )
   local first_match = true
-  for v,ds in pairs( docstring_cache ) do
+  for v,ds in next, docstring_cache, nil do
     if s_match( ds, s ) then
       if not first_match then
         print( delim )
@@ -3171,8 +3357,10 @@ local M_meta = {
     wrap = annotate[=[
 ##                 The `annotate.help.wrap` Function                ##
 
-    annotate.help.wrap( [self,] function ) ==> function
-        self: table   -- the annotate.help table itself
+    annotate.help.wrap( [self,] hfunc [, ofunc] ) ==> function
+        self : table      -- the annotate.help table itself
+        hfunc: function   -- fallback function for getting help
+        ofunc: function   -- custom output function
 
 This function builds a new closure that first tries to find an
 annotation/docstring for a given Lua value and then falls back to the
