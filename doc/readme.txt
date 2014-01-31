@@ -313,6 +313,10 @@ checking functions.
 
     Matches any one value (including nil).
 
+*   `integer`
+
+    Matches numbers without fractional part.
+
 *   `object`
 
     Matches a Lua table or a userdata, but doesn't check for a
@@ -328,10 +332,6 @@ checking functions.
 
 Some optional type checkers are defined if the necessary modules and
 functions are available:
-
-*   `integer`
-
-    Matches numbers without fractional part. Requires `math.floor`.
 
 *   `file`
 
@@ -408,11 +408,11 @@ docstring. Assuming `help` is the return value of the `require`-call:
     is a function value, it is used in a `string.gsub` call to replace
     all occurrences of the pattern with a highlighted value.
 
-*   `help:wrap( help_func )` or `help.wrap( help_func )`
+*   `help:wrap( func [, out] )` or `help.wrap( func [, out] )`
 
-    Returns a function that first looks for an annotation for a given
-    value and prints it if it exists, or falls back to the supplied
-    `help_func` function.
+    Returns a closure that first looks for an annotation for a given
+    value and prints it if it exists (optionally using a custom `out`
+    function), or falls back to the supplied `func` function.
 
 *   `help:lookup( value )` or `help.lookup( value )`
 
@@ -543,7 +543,7 @@ not indented at least 4 spaces.
 
     test() -- run the tests
 
-The result is:
+The output is:
 
     ### [++-++] function func( n )
     ### TOTAL: 4 ok, 1 failed, 5 total
@@ -551,7 +551,7 @@ The result is:
 
 ##                             Changelog                            ##
 
-*   Version 0.2 [2013/06/xx]
+*   Version 0.2 [2014/02/xx]
     *    added plugin for simple interactive help
     *    added plugin for running test code within annotations
 *   Version 0.1 [2013/04/21]
@@ -593,7 +593,7 @@ Comments and feedback are always welcome.
 
 ##                             License                              ##
 
-annotate is *copyrighted free software* distributed under the MIT
+`annotate` is *copyrighted free software* distributed under the MIT
 license (the same license as Lua 5.1). The full license text follows:
 
     annotate (c) 2013 Philipp Janda

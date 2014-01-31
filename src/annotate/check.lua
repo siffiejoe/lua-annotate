@@ -21,7 +21,7 @@ local L_match = assert( L.match )
 local loadstring = assert( loadstring or load )
 local unpack = assert( unpack or table.unpack )
 -- optional
-local print, next, io, math = print, next, io, math
+local print, next, io = print, next, io
 
 
 ----------------------------------------------------------------------
@@ -795,6 +795,9 @@ local types = {
   ["function"] = function( val ) return type( val ) == "function" end,
   thread = function( val ) return type( val ) == "thread" end,
   any = function( val ) return true end,
+  integer = function( val )
+    return type( val ) == "number" and val % 1 == 0
+  end,
   object = function( val )
     local t = type( val )
     return t == "userdata" or t == "table"
@@ -808,12 +811,6 @@ if type( io ) == "table" and type( io.type ) == "function" then
   local iotype = io.type
   types[ "file" ] = function( val )
     return iotype( val ) == "file"
-  end
-end
-if type( math ) == "table" and type( math.floor ) == "function" then
-  local mathfloor = math.floor
-  types[ "integer" ] = function( val )
-    return type( val ) == "number" and val == mathfloor( val )
   end
 end
 if type( L.type ) == "function" then
