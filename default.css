@@ -6,11 +6,27 @@ body {
   margin: 0px;
   padding: 0px;
   font-size: 15px;
-  font-family: arial,helvetica,geneva,sans-serif;
+  font-family: helvetica,geneva,sans-serif;
+  max-width: 60em;
 }
-p, pre, blockquote {
-  margin-left: 20px;
-  margin-right: 20px;
+body > p, body > pre, body > blockquote,
+body > ul, body > ol {
+  margin-left: 50px;
+  margin-right: 50px;
+}
+li > p, li > ul, li > ol {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+li > ul, li > ol {
+  padding-left: 20px;
+}
+p, pre, blockquote, ul, ol {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+li {
+  padding-left: 10px;
 }
 
 
@@ -30,7 +46,7 @@ h1 {
 }
 h2, h3, h4, h5, h6 {
   margin-top: 35px;
-  padding: 0px 40px 0px 40px;
+  padding: 0px 60px 0px 60px;
   background-color: #E7E7E7;
   line-height: 30px;
   font-weight: normal;
@@ -89,5 +105,4 @@ pre {
 pre > code {
   font-weight: normal;
 }
-
 
